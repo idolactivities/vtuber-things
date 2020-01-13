@@ -1,7 +1,9 @@
+[« back](index.md)
+
 # Stream Etiquette
 
 If you're watching a VTuber stream in Japanese or another language
-you don't understand, here's a quick guide to not looking like an ass.
+you don't understand, here's what you should keep in mind.
 
 ## The Short Version
 
@@ -11,11 +13,12 @@ you don't understand, here's a quick guide to not looking like an ass.
 ## The Medium Version
 
 * **Have common sense**
-  * The streamer can't understand you, so saying "Do this!" or "Say this!" is pointless.
-  * Live streams do not have subtitles. I should not have to explain this.
+  * The streamer doesn't understand you, so messages like "Do this!" or "Say this!" are pointless.
+  * Live streams do not have subtitles.
+  * The English and Japanese communities have different memes.
 * **Have common courtesy**
-  * Even if the streamer could understand you, saying "Do this!" or "Say this!" is obnoxious.
-  * Stay on topic. Don't chat about your personal life or other VTubers.
+  * Even if the streamer could understand you, you shouldn't pester them to do things.
+  * Stay on topic. Stream chat is not for discussing your life or other VTubers.
   * Don't spam.
 
 ## The Long Version
@@ -43,8 +46,7 @@ your comment in a language they don't understand.
 
 ### If the streamer can't understand me, why do I have to stay on topic?
 
-1. It's the not-asshole thing to do
-2. It creates a good environment for other English-speakers who are watching
+It creates a good environment for other English-speakers who are watching.
 
 Even if someone is just lurking in chat or watching the VOD, it's a much nicer experience
 to see other English-speaking fans enjoying and talking about *what's happening in the stream*,
@@ -54,23 +56,29 @@ On the other hand, if other viewers see you using chat as your personal Twitter 
 they'll decide it's okay for them to do the same, and you've now ruined the experience for *everyone*
 trying to enjoy the stream, regardless of the language they speak, including the streamer themselves.
 
-I also shouldn't have to tell you that it's *very* rude to come into a streamer's chat and
-start talking about a different streamer. Not only is it disrespectful to the streamer,
-if people wanted to talk about another streamer, they would be in *their* chat, not here.
+It's also *very* rude to come into a streamer's chat and start talking about a different streamer.
+Not only is it disrespectful to the streamer, if people wanted to talk about another streamer,
+they would be in *their* chat, not here.
 
-It's also worth mentioning that some streamers check their own VODs after the stream is
+It's worth mentioning that some streamers check their own VODs after the stream is
 over so they can read chat in detail. Who knows? They might be using Google translate to read
 comments in other languages. I've even seen streamers pause to plug a comment into Google translate
 live. So chat with that in mind.
 
-### "Just a random English comment passing through"
+### A side note on memes
 
-It's a relatively minor offense in the grand scheme of things... but please don't do this.
-It spam that contributes nothing. In the same vein, "I don't even understand this, why am
-I here?" That's a good question. Why *are* you here?
+Memes are fun, we all love them, just remember that what's a meme among the English
+community is not necessarily a meme among the Japanese community. A certain moment may
+have made the streamer famous to English audiences, but to the Japanese audience and
+the streamer themselves, it might not have been anything memorable.
+
+Even if it's relevant to the VTuber, don't be surprised if they don't understand your
+memes at all, even if you translate them. Like all things, memes are best in moderation.
+
+### Any other English speakers?
 
 I understand that it can be lonely in chat if it feels like nobody else speaks your language.
-If it's before the stream or right at the start, it's okay to ask, *once*, "Are there any
+If it's before the stream or right at the start, go ahead and ask, *once*, "Are there any
 other English speakers here?"
 
 This does *not* mean spam it, and it does *not* mean messages like "WHERE THE ENGLISH GANG AT!?!?"
