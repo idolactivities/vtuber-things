@@ -43,17 +43,15 @@ your comment in a language they don't understand.
 
 ### If the streamer can't understand me, why do I have to stay on topic?
 
-Aside from what I said in the previous section, you should stay on topic because:
-
-1. it's the not-asshole thing to do
-2. it creates a good environment for other English-speakers who are watching
+1. It's the not-asshole thing to do
+2. It creates a good environment for other English-speakers who are watching
 
 Even if someone is just lurking in chat or watching the VOD, it's a much nicer experience
 to see other English-speaking fans enjoying and talking about *what's happening in the stream*,
 and *not* their lunch or that game of Apex they played yesterday.
 
 On the other hand, if other viewers see you using chat as your personal Twitter or spamming memes,
-they'll decide it's okay for them to do the same, and you've ruined the experience for everyone
+they'll decide it's okay for them to do the same, and you've now ruined the experience for *everyone*
 trying to enjoy the stream, regardless of the language they speak, including the streamer themselves.
 
 I also shouldn't have to tell you that it's *very* rude to come into a streamer's chat and
@@ -77,3 +75,17 @@ other English speakers here?"
 
 This does *not* mean spam it, and it does *not* mean messages like "WHERE THE ENGLISH GANG AT!?!?"
 "AM I THE ONLY ONE HERE WHO SPEAKS ENGLISH!?!?!?" "LOL I DON'T READ MOON" "SPEAK ENGLISH YOU GUYS"
+
+If the stream is in progress and you see other people chatting in English, that means yes,
+there are other English speakers, so no need to ask. And if there aren't, you can either lurk
+quietly or be the first brave person to speak up. Maybe some other people will speak up too.
+
+### At the end of the day...
+
+It may seem like I've written a wall of text about "don't do this" and "don't do that", but again,
+**all of it should be common sense and common courtesy**. You don't have to memorize a rulebook
+to participate in a stream. Just don't be an asshole.
+
+Even if the streamer can't understand most of what you say, they can tell who's actually engaged
+and who's just spamming. So if you want to show your support, to show that you're having fun—go ahead!
+Get excited in chat, laugh along, cheer along, and enjoy the stream.
