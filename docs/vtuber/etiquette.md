@@ -1,4 +1,4 @@
-[« back](index.md)
+[« back](../index.md)
 
 # Stream Etiquette
 
@@ -78,8 +78,8 @@ memes at all, even if you translate them. Like all things, memes are best in mod
 ### Any other English speakers?
 
 I understand that it can be lonely in chat if it feels like nobody else speaks your language.
-If it's before the stream or right at the start, go ahead and ask, *once*, "Are there any
-other English speakers here?"
+So a simple, "Are there any other English speakers here?" before stream or right at the start
+is perfectly fine.
 
 This does *not* mean spam it, and it does *not* mean messages like "WHERE THE ENGLISH GANG AT!?!?"
 "AM I THE ONLY ONE HERE WHO SPEAKS ENGLISH!?!?!?" "LOL I DON'T READ MOON" "SPEAK ENGLISH YOU GUYS"
