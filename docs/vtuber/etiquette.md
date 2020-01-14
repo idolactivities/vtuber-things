@@ -3,7 +3,7 @@
 # Stream Etiquette
 
 If you're watching a VTuber stream in Japanese or another language
-you don't understand, here's what you should keep in mind.
+you don't understand, here's some things to keep in mind.
 
 ## The Short Version
 
@@ -28,21 +28,17 @@ But there are some points that could benefit from more detail or clarification:
 
 ### So how do I communicate with the streamer?
 
-If you follow the above rules and are polite, a kind person in chat might translate for you.
-If you don't follow the above rules and act like an ass, expect to be ignored.
-Either way, there might be no translators in chat, or the translators might want to focus on the stream.
-Again, common courtesy: don't pester them, and don't spam translation requests.
+Be polite, don't spam or pester, and a kind person in chat might translate for you.
+Just remember that there might be no translators in chat, and even if there are,
+don't be offended if they would rather focus on watching the stream and can't translate
+for you.
 
 It's also possible that the streamer can understand *simple* phrases in English.
 If you just want to tell them "Cute!" or "Cool!" or "Good job!" then you can probably
 get your message across.
 
-Regardless, the streamer is not your trained monkey. This applies to all streamers,
-not just VTubers. Don't pester them to say things or do things for your amusement.
-Even if they're doing something wrong in a game and you absolutely *must* tell them
-the correct way... don't. The Japanese viewers have almost certainly already said it,
-and if the streamer missed their comments, there's no way they're going to read
-your comment in a language they don't understand.
+Regardless, the streamer is not a trained monkey. This applies to all streamers,
+not just VTubers. Please don't pester them to say things or do things for your amusement.
 
 ### If the streamer can't understand me, why do I have to stay on topic?
 
@@ -52,28 +48,30 @@ Even if someone is just lurking in chat or watching the VOD, it's a much nicer e
 to see other English-speaking fans enjoying and talking about *what's happening in the stream*,
 and *not* their lunch or that game of Apex they played yesterday.
 
-On the other hand, if other viewers see you using chat as your personal Twitter or spamming memes,
-they'll decide it's okay for them to do the same, and you've now ruined the experience for *everyone*
-trying to enjoy the stream, regardless of the language they speak, including the streamer themselves.
+On the other hand, if other viewers see people using chat as their personal Twitter or spamming memes,
+they'll decide it's okay for them to do the same. This spoils the fun for both the streamer
+and everyone else in chat.
 
-It's also *very* rude to come into a streamer's chat and start talking about a different streamer.
-Not only is it disrespectful to the streamer, if people wanted to talk about another streamer,
-they would be in *their* chat, not here.
+It's also *very* rude to randomly start talking about a different streamer.
+Not only is it disrespectful to the streamer you are watching,
+if people wanted to talk about that other streamer, they would be in *their* chat, not here.
 
 It's worth mentioning that some streamers check their own VODs after the stream is
-over so they can read chat in detail. Who knows? They might be using Google translate to read
-comments in other languages. I've even seen streamers pause to plug a comment into Google translate
-live. So chat with that in mind.
+over so they can read chat in detail. They might even use Google translate to read
+comments in other languages. I've even seen streamers pause to Google translate a comment live.
+So chat with that in mind.
 
 ### A side note on memes
 
 Memes are fun, we all love them, just remember that what's a meme among the English
 community is not necessarily a meme among the Japanese community. A certain moment may
 have made the streamer famous to English audiences, but to the Japanese audience and
-the streamer themselves, it might not have been anything memorable.
+the streamer themselves, it might not have been anything memorable. Of course, the reverse
+is also true.
 
-Even if it's relevant to the VTuber, don't be surprised if they don't understand your
-memes at all, even if you translate them. Like all things, memes are best in moderation.
+So even if it's relevant to the VTuber, don't be surprised if they don't understand your
+memes at all, even if you translate them. Your messages may even be treated as spam.
+So meme responsibly.
 
 ### Any other English speakers?
 
