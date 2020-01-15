@@ -262,10 +262,19 @@ function clipper(sub, sel, _)
     end
     local logfile_path = work_dir .. clipname .. '_encode.log'
 
-    local segments = build_segments(sub, sel, true)
-    local filter = filter_complex(segments, ass_path)
+    local segment_inputs = build_segments(sub, sel, true)
+    local filter = filter_complex(segment_inputs, ass_path)
 
-    local seek_start, seek_end = 0, 3600
+    -- identify earliest and latest points in the clip so that we can limit
+    -- reading the input file to just the section we need (++execution speed)
+    local seek_start = math.floor(segment_inputs[1][1][1] / 1000)
+    local seek_end = seek_start
+    for _, segments in ipairs(segment_inputs) do
+        local segment_start = math.floor(segments[1][1] / 1000)
+        local segment_end = math.floor(segments[#segments][2] / 1000)
+        if seek_start > segment_start then seek_start = segment_start end
+        if seek_end < segment_end then seek_end = segment_end end
+    end
 
     local encode_cmd = encode_cmd(video_path, seek_start, seek_end, options,
                                   filter, output_path, logfile_path)
