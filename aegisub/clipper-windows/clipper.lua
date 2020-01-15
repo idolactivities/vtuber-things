@@ -10,25 +10,24 @@ https://lyger.github.io/scripts/guides/clipper.html
 -- BASIC CONSTANTS --
 ---------------------
 
-script_name = "Clipper"
-script_description =
-    "Encode a video clip based on the subtitles."
-script_version = "0.1"
+script_name = 'Clipper'
+script_description = 'Encode a video clip based on the subtitles.'
+script_version = '0.1'
 
 clipboard = require('aegisub.clipboard')
 
 ENCODE_PRESETS = {
-    ["Test Encode (fast)"] = {
-        options = "-c:v libx264 -preset ultrafast -tune zerolatency -c:a aac",
-        extension = ".mp4"
+    ['Test Encode (fast)'] = {
+        options = '-c:v libx264 -preset ultrafast -tune zerolatency -c:a aac',
+        extension = '.mp4'
     },
-    ["Twitter Encode (quick, OK quality)"] = {
-        options = "-c:v libx264 -preset slow -profile:v high -level 3.2 -tune film -c:a aac",
-        extension = ".mp4"
+    ['Twitter Encode (quick, OK quality)'] = {
+        options = '-c:v libx264 -preset slow -profile:v high -level 3.2 -tune film -c:a aac',
+        extension = '.mp4'
     },
-    ["YouTube Encode (slow, WebM)"] = {
-        options = "-c:v libvpx-vp9 -crf 20 -b:v 0 -c:a libopus",
-        extension = ".webm"
+    ['YouTube Encode (slow, WebM)'] = {
+        options = '-c:v libvpx-vp9 -crf 20 -b:v 0 -c:a libopus',
+        extension = '.webm'
     }
 }
 
@@ -41,7 +40,7 @@ global_config = { version = script_version }
 -------------------
 
 function file_exists(name)
-    local f = io.open(name, "r")
+    local f = io.open(name, 'r')
     if f ~= nil then
         io.close(f)
         return true
@@ -49,7 +48,7 @@ function file_exists(name)
     return false
 end
 
-function split_ext(fname) return string.match(fname, "(.-)%.([^%.]+)$") end
+function split_ext(fname) return string.match(fname, '(.-)%.([^%.]+)$') end
 
 function table.keys(tb)
     local keys = {}
@@ -165,8 +164,8 @@ function auto_segment(sub, _)
 end
 
 SEGMENT_OPTIONS = {
-    ["Segments from selected lines"] = manual_segment,
-    ["Automatic segmentation"] = auto_segment,
+    ['Segments from selected lines'] = manual_segment,
+    ['Automatic segmentation'] = auto_segment,
 }
 
 --------------------
@@ -215,7 +214,7 @@ function id_colorspace(video)
         function(pipe)
             for line in pipe:lines() do
                 if line:match('^color') then
-                    local key, value = line:match("^([%w_]+)=(%w+)$")
+                    local key, value = line:match('^([%w_]+)=(%w+)$')
                     if key then values[key] = value end
                 end
             end
@@ -223,14 +222,14 @@ function id_colorspace(video)
     )
 
     -- https://kdenlive.org/en/project/color-hell-ffmpeg-transcoding-and-preserving-bt-601/
-    if values["color_space"] == "bt470bg" then
-        return "bt470bg", "gamma28", "bt470bg"
+    if values['color_space'] == 'bt470bg' then
+        return 'bt470bg', 'gamma28', 'bt470bg'
     else
-        if values["color_space"] == "smpte170m" then
-            return "smpte170m", "smpte170m", "smpte170m"
+        if values['color_space'] == 'smpte170m' then
+            return 'smpte170m', 'smpte170m', 'smpte170m'
         else
-            return values["color_space"], values["color_transfer"],
-                   values["color_primaries"]
+            return values['color_space'], values['color_transfer'],
+                   values['color_primaries']
         end
     end
 end
@@ -255,33 +254,20 @@ end
 -- CONFIG/DIALOG FUNCTIONS --
 -----------------------------
 
-function show_info(message)
+function show_info(message, extra)
     local buttons = {'OK'}
     local button_ids = {ok = 'OK'}
-
-    dialog = {{class = 'label', label = message, x = 0, y = 0, width = 1, height = 1}}
-
-    aegisub.dialog.display(dialog, buttons, button_ids)
-end
-
-function show_help(key, message, show_hide_confirmation)
-    if global_config['skip_help'][key] ~= nil then return end
-
-    if show_hide_confirmation == nil then show_hide_confirmation = true end
 
     -- This is only used internally, so just lazy match links
     local link = message:match('http[s]://%S+')
-
-    local buttons = {'OK'}
-    local button_ids = {ok = 'OK'}
     if link then buttons = {'Copy link', 'OK'} end
 
     dialog = {{class = 'label', label = message, x = 0, y = 0, width = 1, height = 1}}
-    if show_hide_confirmation then
-        table.insert(dialog, {
-            class = 'checkbox', label = 'Don\'t show this message again',
-            name = 'skip', value = false, x = 0, y = 1, width = 1, height = 1,
-        })
+    
+    if extra ~= nil and type(extra) == 'table' then
+        for _, control in ipairs(extra) do
+            table.insert(dialog, control)
+        end
     end
 
     local is_okay = nil
@@ -295,8 +281,26 @@ function show_help(key, message, show_hide_confirmation)
         if is_okay == 'Copy link' then
             clipboard.set(link)
         end
-        if results['skip'] then global_config['skip_help'][key] = true end
     end
+    return results
+end
+
+function show_help(key, message, show_hide_confirmation)
+    if global_config['skip_help'][key] ~= nil then return end
+
+    if show_hide_confirmation == nil then show_hide_confirmation = true end
+
+    local extras = nil
+    if show_hide_confirmation then
+        extras = {{
+            class = 'checkbox', label = 'Don\'t show this message again',
+            name = 'skip', value = false, x = 0, y = 1, width = 1, height = 1,
+        }}
+    end
+
+    results = show_info(message, extras)
+
+    if results['skip'] then global_config['skip_help'][key] = true end
 end
 
 function init_config()
@@ -345,11 +349,11 @@ function load_config()
 
     for line in conf_fp:lines() do
         -- Strip leading whitespace
-        line = line:match( "%s*(.+)" )
+        line = line:match('%s*(.+)')
 
         -- Skip empty lines and comments
-        if line and line:sub( 1, 1 ) ~= "#" and line:sub( 1, 1 ) ~= ";" then
-            option, value = line:match( "(%S+)%s*[=:]%s*(.*)" )
+        if line and line:sub( 1, 1 ) ~= '#' and line:sub( 1, 1 ) ~= ';' then
+            option, value = line:match('(%S+)%s*[=:]%s*(.*)')
 
             -- Lists always end in a comma
             if value:sub(-1) == ',' then
@@ -375,7 +379,7 @@ end
 function find_unused_clipname(output_dir, basename)
     -- build a set of extensions that our presets may have
     local extensions = {}
-    for k, v in pairs(ENCODE_PRESETS) do extensions[v["extension"]] = true end
+    for k, v in pairs(ENCODE_PRESETS) do extensions[v['extension']] = true end
 
     local suffix = 2
     local clipname = basename
@@ -401,26 +405,33 @@ end
 function confirm_overwrite(filename)
     local config = {
         {
-            class = "label",
-            label = ("Are you sure you want to overwrite %s?"):format(filename),
+            class = 'label',
+            label = ('Are you sure you want to overwrite %s?'):format(filename),
             x = 0,
             y = 0,
             width = 4,
             height = 2
         }
     }
-    local buttons = {"Yes", "Cancel"}
-    local button_ids = {ok = "Yes", cancel = "Cancel"}
+    local buttons = {'Yes', 'Cancel'}
+    local button_ids = {ok = 'Yes', cancel = 'Cancel'}
     local button, _ = aegisub.dialog.display(config, buttons, button_ids)
     if button == false then aegisub.cancel() end
 end
 
 function select_clip_options(clipname)
     local config = {
-        {class = "label", label = "Preset", x = 0, y = 0, width = 1, height = 1},
         {
-            class = "dropdown",
-            name = "preset",
+            class = 'label',
+            label = 'Preset',
+            x = 0,
+            y = 0,
+            width = 1,
+            height = 1
+        },
+        {
+            class = 'dropdown',
+            name = 'preset',
             items = table.keys(ENCODE_PRESETS),
             value = global_config['preset'],
             x = 2,
@@ -429,16 +440,16 @@ function select_clip_options(clipname)
             height = 1
         },
         {
-            class = "label",
-            label = "Clip Name",
+            class = 'label',
+            label = 'Clip Name',
             x = 0,
             y = 1,
             width = 1,
             height = 1
         },
         {
-            class = "edit",
-            name = "clipname",
+            class = 'edit',
+            name = 'clipname',
             value = clipname,
             x = 2,
             y = 1,
@@ -446,19 +457,27 @@ function select_clip_options(clipname)
             height = 1
         },
         {
-            class = "dropdown",
-            name = "segmentation",
-            items = table.keys(SEGMENT_OPTIONS),
-            value = global_config['segmentation'],
+            class = 'label',
+            label = 'Segmentation',
             x = 0,
             y = 2,
-            width = 3,
+            width = 1,
+            height = 1
+        },
+        {
+            class = 'dropdown',
+            name = 'segmentation',
+            items = table.keys(SEGMENT_OPTIONS),
+            value = global_config['segmentation'],
+            x = 2,
+            y = 2,
+            width = 2,
             height = 1
         },
 
     }
-    local buttons = {"OK", "Cancel"}
-    local button_ids = {ok = "OK", cancel = "Cancel"}
+    local buttons = {'OK', 'Cancel'}
+    local button_ids = {ok = 'OK', cancel = 'Cancel'}
     local button, results = aegisub.dialog.display(config, buttons, button_ids)
     if button == false then aegisub.cancel() end
 
@@ -484,16 +503,16 @@ function clipper(sub, sel, _)
 
     local clipname = find_unused_clipname(work_dir, split_ext(ass_fname))
     local results = select_clip_options(clipname)
-    local output_path = work_dir .. results["clipname"] ..
-                            ENCODE_PRESETS[results["preset"]]["extension"]
-    local options = ENCODE_PRESETS[results["preset"]]["options"]
+    local output_path = work_dir .. results['clipname'] ..
+                            ENCODE_PRESETS[results['preset']]['extension']
+    local options = ENCODE_PRESETS[results['preset']]['options']
 
     if file_exists(output_path) then
         if output_path == video_path then
             show_info((
-                "The specified output file (%s) is the same as\n" ..
-                "the input file, which isn't allowed. Specify\n" ..
-                "a different clip name instead."):format(output_path))
+                'The specified output file (%s) is the same as\n' ..
+                'the input file, which isn\'t allowed. Specify\n' ..
+                'a different clip name instead.'):format(output_path))
             aegisub.cancel()
         end
         confirm_overwrite(output_path)
@@ -555,7 +574,12 @@ function clipper(sub, sel, _)
     log_fh:close()
 
     if res == nil then
-        show_info(('FFmpeg failed to complete! Detailed information saved to:\n\n%s'):format(logfile_path))
+        show_info((
+            'FFmpeg failed to complete! Try the troubleshooting\n' ..
+            'here to figure out what\'s wrong:\n\n' ..
+            'https://lyger.github.io/scripts/guides/clipper.html#troubleshooting\n\n' ..
+            'Detailed information saved to:\n\n%s'
+        ):format(logfile_path))
         aegisub.cancel()
     end
 
@@ -564,9 +588,8 @@ function clipper(sub, sel, _)
 end
 
 function validate_clipper(sub, sel, _)
-    if aegisub.decode_path('?script') == nil
-        or aegisub.file_name() == nil
-        or aegisub.decode_path('?video') == nil
+    if aegisub.decode_path('?script') == '?script'
+        or aegisub.decode_path('?video') == '?video'
     then
         return false
     end
