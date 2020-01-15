@@ -1,24 +1,5 @@
 --[[
-Creates easy video clips from Aegisub.
-
-REQUIREMENTS
-============
-ffmpeg must be in your PATH
-
-DESCRIPTION
-===========
-
-Time a blank line that, for example, starts 1 minute into the video and lasts
-for 30 seconds. Select that line, run this automation, and it will save a
-30-second long video clip that starts at 1 minute in the source video. If there
-are any subtitles in the .ass file you are using, they will also be hardsubbed
-onto the resulting video.
-
-If you time multiple lines and select all of them when running this automation,
-the final clip will consist of all those segments joined together in
-chronological order. The lines that define the segments you wish to clip do not
-need to be comments, but it's recommended that you comment them out.
-
+Creates a hardsubbed video clip from selected lines.
 ]] --
 script_name = "Clipper"
 script_description =
