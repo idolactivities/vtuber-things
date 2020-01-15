@@ -66,9 +66,10 @@ function encode_cmd(video, ss, to, options, filter, afilter, output, logfile)
     local command = table.concat({
         ('%q'):format(FFMPEG),
         ('-ss %s -to %s -i %q -copyts'):format(ss, to, video), options,
-        ('-vf %q -af %q'):format(filter, afilter), ('%q'):format(output),
+        ('-vf %q -af %q'):format(filter, afilter),
         ('-color_primaries %s -color_trc %s -colorspace %s'):format(
-            id_colorspace(video)), ('2> %q'):format(logfile)
+            id_colorspace(video)), ('%q'):format(output),
+        ('2> %q'):format(logfile)
     }, ' ')
     return command
 end
