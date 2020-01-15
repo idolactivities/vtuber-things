@@ -67,4 +67,4 @@ or folder names? Try renaming your files and folders to only use English charact
    language settings", click on "Change system locale", and check the box for utf-8
    support.
 
-   ![Change system locale](/assets/img/guides_clipper_locale_settings.png)
+   ![Change system locale](/scripts/assets/img/guides_clipper_locale_settings.png)
