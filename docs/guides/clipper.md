@@ -51,7 +51,7 @@ to Aegisub's `automation/autoload` directory.
 
 ## Usage
 
-The first thing you should do is read **"[Before you translate...](../guides/translating.md)"**
+The first thing you should do is read **["Before You Translate..."](../vtuber/translating.md)**
 
 Did you read it? Understand it? Good.
 

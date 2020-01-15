@@ -1,3 +1,5 @@
+[Home](../index.md) » Guides
+
 # Guides
 
 **[Clipper](clipper.md)**

@@ -4,6 +4,10 @@ Under construction.
 
 **[Clipper](guides/clipper.md)**
 
+**[Subtitling Guide](guides/subtitling.md)**
+
 ## VTubers
 
-**[Stream etiquette](vtuber/etiquette.md)**
+**[Stream Etiquette](vtuber/etiquette.md)**
+
+**[Before You Translate...](vtuber/translating.md)**

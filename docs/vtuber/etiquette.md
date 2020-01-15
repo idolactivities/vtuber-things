@@ -1,4 +1,4 @@
-[« back](../index.md)
+[Home](../index.md) » [VTubers](index.md) » Stream Etiquette
 
 # Stream Etiquette
 
