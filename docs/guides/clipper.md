@@ -18,7 +18,7 @@ r8903+1 installer from **[here](https://www.goodjobmedia.com/fansubbing/)**.
 You can find a guide to using Aegisub [on the official site](http://docs.aegisub.org/3.2/Main_Page/).
 While a lot of the information there is old, it should teach you the
 basics of using the program to create subtitles.
-Check out the [subtitling guide](subtitling.md) for advice on how to make your subtitles
+Check out the [Subtitling Guide](subtitling.md) for advice on how to make your subtitles
 good-looking and easy to read.
 
 ## Installation
@@ -60,7 +60,7 @@ It's okay if you haven't done anything yet. Your subtitles need to be saved in o
 
 Create your subtitles as normal, adding them to the scenes in the original video that you want to clip.
 This guide will not teach you the basics of using Aegisub, but you can check out the
-[subtitling guide](subtitling.md) for advice on polishing your subtitles.
+[Subtitling Guide](subtitling.md) for advice on polishing your subtitles.
 
 When you are done creating your subtitles, it's time to run Clipper.
 From the "Automation" menu at the top, select "Clipper".
@@ -85,7 +85,41 @@ This is good for making clips that mostly consist of talking.
 This offers you more control over exactly what gets clipped, allowing you to cut out and join
 together many scenes that may or may not have subtitles.
 
-TODO: Write the rest of this section
+You define your segments by adding commented lines to your subtitles file.
+Each commented line defines a segment to clip, which starts at the line's start time
+and ends at the line's end time. To create a clip, select the lines corresponding to
+the segments you want, and run Clipper set to "Segment from selected lines".
+
+For example, in the screenshot below, I've made a commented line that starts at 7:50.62
+in the video and ends at 8:04.85. If I select that line and run Clipper, it will
+cut out the part of the video between 7:50.62 and 8:04.85. If I had any subtitles in the
+file, it would also add those to the video.
+
+<a href="/scripts/assets/img/guides_clipper_manual_segment_01.png" target="_blank">
+  <img src="/scripts/assets/img/guides_clipper_manual_segment_01.png" width="520" alt="Click to enlarge" title="Click to enlarge"/>
+</a>
+
+You should always comment the lines you use to define your segments, because they are not
+actual subtitles. We are only using them to tell Clipper how to clip our video, but we
+don't want those lines to actually appear on the final video. Because the lines are
+commented and won't show up in the final video, you can write whatever you want in them.
+I recommend putting a name for the segment, so you remember what part of the video it is.
+
+You can create (in theory) as many segments as you want, and Clipper will cut them out
+and join them together to create the final video. You can see in the below screenshot,
+I've created two segments (the commented lines at the top): one starts at around 7:50
+and ends at around 8:04, and the other starts at around 32:11 and ends at around 32:57.
+I've also added descriptions of what happens in each segment and some subtitles.
+
+<a href="/scripts/assets/img/guides_clipper_manual_segment_02.png" target="_blank">
+  <img src="/scripts/assets/img/guides_clipper_manual_segment_02.png" width="520" alt="Click to enlarge" title="Click to enlarge"/>
+</a>
+
+To create my final clip, all I have to do is select the two commented lines (hold shift
+or ctrl to select multiple lines) and run Clipper set to "Segment from selected lines".
+The two segments will be cut out of the video, the subtitles will be added, the segments
+will be joined together, and the final clip will be saved in the same folder as the
+subtitles file.
 
 ## Troubleshooting
 
