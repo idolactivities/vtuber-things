@@ -62,15 +62,19 @@ function id_colorspace(video)
 end
 
 function encode_cmd(video, ss, to, options, filter, output, logfile)
-    local command = table.concat({
+    local command = {
         ('%q'):format(FFMPEG),
         ('-ss %s -to %s -i %q -copyts'):format(ss, to, video), options,
         ('-filter_complex %q -map "[vo]" -map "[ao]"'):format(filter),
         ('-color_primaries %s -color_trc %s -colorspace %s'):format(
             id_colorspace(video)), ('%q'):format(output),
         ('2> %q'):format(logfile)
-    }, ' ')
-    return command
+    }
+    local frame_ms = aegisub.ms_from_frame(1) - aegisub.ms_from_frame(0)
+    if frame_ms <= 20 then
+        table.insert(command, 2, ('-itsoffset -%0.3f'):format(frame_ms / 1000))
+    end
+    return table.concat(command, ' ')
 end
 
 function build_segments(sub, sel, explicit)
