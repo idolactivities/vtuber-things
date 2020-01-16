@@ -27,3 +27,12 @@ If you are adding a translation for on-screen text, then feel free to
 pick a font that is similar to the original font, as long as it's also
 readable. You can find various free fonts on sites like
 [DaFont](https://www.dafont.com/), just try not to go too crazy.
+
+## Font Size
+
+If you plan to upload to Twitter or YouTube, many people will be watching
+on mobile, which makes it all the more important to have a big, bold
+font for your subtitles.
+
+As a rule of thumb, I would use font size 64 or larger for 720p video
+and 100 or larger for 1080p video.

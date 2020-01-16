@@ -5,6 +5,10 @@
 Clipper is a handy script that allows you to create subtitled (or unsubtitled) clips from a longer video,
 directly from Aegisub.
 
+Create your subtitles as normal, then use commented lines to select the parts of the video to clip.
+Run Clipper on those lines, and the subtitles will be added onto the video ("hardsubbed")
+and the selected parts of the video will be cut out and joined together into a new video file.
+
 ## Requirements
 
 The only requirements are 64-bit Windows 7 (or better) and Aegisub.
@@ -55,40 +59,25 @@ The first thing you should do is read **["Before You Translate..."](../vtuber/tr
 
 Did you read it? Understand it? Good.
 
-The first step to using Clipper is to open the video in Aegisub and save a new subtitles file.
-It's okay if you haven't done anything yet. Your subtitles need to be saved in order for Clipper to work.
+The first step to using Clipper is to download the video you want to make a clip from.
+There are tons of YouTube downloaders out there, as well as downloaders for any other
+video site you can imagine, so I won't walk you through this step.
+
+Once you have the video downloaded, open it in Aegisub and save a new subtitles file.
+Clipper requires a saved subtitles file, and will only show saved changes in its output,
+so be sure to save frequently.
 
 Create your subtitles as normal, adding them to the scenes in the original video that you want to clip.
 This guide will not teach you the basics of using Aegisub, but you can check out the
 [Subtitling Guide](subtitling.md) for advice on polishing your subtitles.
 
-When you are done creating your subtitles, it's time to run Clipper.
-From the "Automation" menu at the top, select "Clipper".
-You should see a dialog like this:
-
-![Clipper menu](/scripts/assets/img/guides_clipper_clipper_menu.png)
-
-* **Preset** – The quality settings to use when encoding the clip.
-Choose one based on what you plan to do with the final video.
-* **Clip Name** – Name your clip. It will be saved in the same folder as your subtitles file.
-* **Segmentation** – Controls what parts of the original video get clipped.
-Detailed explanation below.
-
-### Automatic segmentation
-
-Clipper will look for the parts of the video where you've added subtitles, and only cut out those parts.
-Parts of the video that don't have subtitles will be left out of the final clip.
-This is good for making clips that mostly consist of talking.
-
-### Segments from selected lines
-
-This offers you more control over exactly what gets clipped, allowing you to cut out and join
-together many scenes that may or may not have subtitles.
+The next step is to define your **segments**. The final clip will be made of one or more
+segments selected from the original video.
 
 You define your segments by adding commented lines to your subtitles file.
-Each commented line defines a segment to clip, which starts at the line's start time
+Each commented line defines a segment that starts at the line's start time
 and ends at the line's end time. To create a clip, select the lines corresponding to
-the segments you want, and run Clipper set to "Segment from selected lines".
+the segments you want and run Clipper.
 
 For example, in the screenshot below, I've made a commented line that starts at 7:50.62
 in the video and ends at 8:04.85. If I select that line and run Clipper, it will
@@ -115,11 +104,20 @@ I've also added descriptions of what happens in each segment and some subtitles.
   <img src="/scripts/assets/img/guides_clipper_manual_segment_02.png" width="520" alt="Click to enlarge" title="Click to enlarge"/>
 </a>
 
-To create my final clip, all I have to do is select the two commented lines (hold shift
-or ctrl to select multiple lines) and run Clipper set to "Segment from selected lines".
-The two segments will be cut out of the video, the subtitles will be added, the segments
-will be joined together, and the final clip will be saved in the same folder as the
-subtitles file.
+When you are done creating your subtitles and segments, it's time to run Clipper.
+Select the commented lines that you want to make a clip from (hold shift or ctrl to select multiple lines).
+In my example,t hat would be the two lines at the top. Then, from the "Automation" menu at the top,
+select "Clipper". That should bring up this dialog:
+
+![Clipper menu](/scripts/assets/img/guides_clipper_clipper_menu.png)
+
+* **Preset** – The quality settings to use when encoding the clip.
+Choose one based on what you plan to do with the final video.
+* **Clip Name** – Name your clip. It will be saved in the same folder as your subtitles file.
+
+If everything looks okay, run Clipper, and your selected segments will be cut out of the video,
+the subtitles will be added, the segments will be joined together, and the final clip will
+be saved in the same folder as the subtitles file.
 
 ## Troubleshooting
 
@@ -137,6 +135,8 @@ or folder names? Try renaming your files and folders to only use English charact
    box for UTF-8 support.
 
    ![Change system locale](/scripts/assets/img/guides_clipper_locale_settings.png)
-5. What kind of segmentation are you using? "From selected lines" or "automatic"?
-Make sure you're follow the instructions for each type of segmentation as
-explained in [Usage](#usage).
+
+## Credits
+
+Clipper was developed by [myself](https://github.com/lyger) and [lae](https://github.com/lae)
+and uses [FFmpeg](https://www.ffmpeg.org/) for encoding.
