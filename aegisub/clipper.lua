@@ -70,6 +70,9 @@ function encode_cmd(video, ss, to, options, filter, output, logfile)
             id_colorspace(video)), ('%q'):format(output),
         ('2> %q'):format(logfile)
     }
+    -- add a input video read offset if our video FPS is 50+ to fix off-by-one
+    -- frame errors in 60FPS videos (haven't tested on 50FPS videos though, I
+    -- just picked a number close to 17)
     local frame_ms = aegisub.ms_from_frame(1) - aegisub.ms_from_frame(0)
     if frame_ms <= 20 then
         table.insert(command, 2, ('-itsoffset -%0.3f'):format(frame_ms / 1000))
