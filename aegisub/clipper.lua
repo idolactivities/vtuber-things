@@ -8,7 +8,6 @@ script_version = "1.0"
 
 FFMPEG = "ffmpeg"
 FFPROBE = "ffprobe"
-
 ENCODE_PRESETS = {
     ["Test Encode (fast)"] = {
         options = "-c:v libx264 -preset ultrafast -tune zerolatency -c:a aac",
@@ -229,22 +228,50 @@ function filter_complex(inputs, subtitle_file)
     aconcat_filter = {
         trimmed_ains, -- list of trimmed inputs built earlier
         ("concat=n=%d:v=0:a=1"):format(#inputs), -- concat the audio inputs
-        "[ao]" -- the final video output
+        "[ao]" -- the final audio output
     }
     table.insert(filters, table.concat(aconcat_filter))
 
     return table.concat(filters, ";")
 end
 
+function save_subtitles(sub, save_path)
+    local content = {}
+    local section = ""
+    for _, line in ipairs(sub) do
+        if not (line.section == section) then
+            section = line.section
+            table.insert(content, section)
+        end
+        table.insert(content, line.raw)
+    end
+    subs_fh = io.open(save_path, 'w')
+    subs_fh:write(table.concat(content, '\n'))
+    subs_fh:close()
+end
+
 function clipper(sub, sel, _)
+    local dir_sep = package.config:sub(1, 1)
+
+    -- save a copy of the current subtitles to a temporary location
+    local subs_path = aegisub.decode_path('?temp/clipper.ass')
+    save_subtitles(sub, subs_path)
+
     -- path of video
     local video_path = aegisub.project_properties().video_file
-    -- path/filename of subtitle script
-    local work_dir = aegisub.decode_path('?script') .. package.config:sub(1, 1)
-    local ass_fname = aegisub.file_name()
-    local ass_path = work_dir .. ass_fname
 
-    local clipname = find_unused_clipname(work_dir, split_ext(ass_fname))
+    -- sets work_dir to the same folder as the script if it exists, otherwise
+    -- use the video dir (e.g. for a quick unsubbed clip)
+    local work_dir = aegisub.decode_path('?script')
+    if work_dir == '?script' then work_dir = aegisub.decode_path('?video') end
+    work_dir = work_dir .. dir_sep
+
+    -- default the clipname to either the script's filename or "Untitled" with
+    -- a suffix that doesn't conflict with any existing files
+    local clipname = aegisub.file_name()
+    if not (clipname == 'Untitled') then clipname = split_ext(clipname) end
+    clipname = find_unused_clipname(work_dir, clipname)
+    -- grab final selected options from the user
     local preset, clipname = select_clip_options(clipname)
     local output_path = work_dir .. clipname ..
                             ENCODE_PRESETS[preset]["extension"]
@@ -260,10 +287,10 @@ function clipper(sub, sel, _)
         confirm_overwrite(output_path)
         options = options .. ' -y'
     end
-    local logfile_path = work_dir .. clipname .. '_encode.log'
+    local logfile_path = output_path .. '_encode.log'
 
     local segment_inputs = build_segments(sub, sel, true)
-    local filter = filter_complex(segment_inputs, ass_path)
+    local filter = filter_complex(segment_inputs, subs_path)
 
     -- identify earliest and latest points in the clip so that we can limit
     -- reading the input file to just the section we need (++execution speed)
@@ -282,6 +309,9 @@ function clipper(sub, sel, _)
                           ('\n\nFor command output, please see the log file at %q\n\n'):format(
                               logfile_path))
     res = os.execute(encode_cmd)
+
+    -- remove temporary subtitle file
+    os.remove(subs_path)
 
     if res == nil then
         aegisub.debug.out('ffmpeg failed to complete.')
@@ -372,10 +402,8 @@ function find_unused_clipname(output_dir, basename)
 end
 
 function validate_clipper(sub, sel, _)
-    if aegisub.decode_path('?script') == nil or aegisub.file_name() == nil then
-        return false
-    end
-    if aegisub.decode_path('?video') == nil then return false end
+    -- fail if video is not loaded
+    if aegisub.decode_path('?video') == '?video' then return false end
     return true
 end
 
