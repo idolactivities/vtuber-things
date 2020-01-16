@@ -271,7 +271,7 @@ function clipper(sub, sel, _)
     local seek_end = seek_start
     for _, segments in ipairs(segment_inputs) do
         local segment_start = math.floor(segments[1][1] / 1000)
-        local segment_end = math.floor(segments[#segments][2] / 1000)
+        local segment_end = math.ceil(segments[#segments][2] / 1000)
         if seek_start > segment_start then seek_start = segment_start end
         if seek_end < segment_end then seek_end = segment_end end
     end
