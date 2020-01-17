@@ -5,6 +5,6 @@ defaults:
   -
     scope:
       path: ""
-      type: "posts"
+      type: "pages"
     values:
       has_toc: true
