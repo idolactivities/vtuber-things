@@ -1,12 +1,12 @@
 Under construction.
 
-## Guides
+# Guides
 
 **[Clipper](guides/clipper.md)**
 
 **[Subtitling Guide](guides/subtitling.md)**
 
-## VTubers
+# VTubers
 
 **[Stream Etiquette](vtuber/etiquette.md)**
 

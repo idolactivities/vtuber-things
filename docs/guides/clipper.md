@@ -32,7 +32,7 @@ Mac and Linux users should install `ffmpeg` using a package manager and save
 [lae's version of Clipper](https://github.com/idolactivities/scripts/blob/master/aegisub/clipper.lua)
 to Aegisub's `automation/autoload` directory.
 
-1. Download and install Aegisub (see previous section).
+1. Download and install Aegisub (see previous section). **Old versions of Aegisub may not be compatible.**
 2. Download `clipper.zip`.
 3. Navigate to `%APPDATA%\Aegisub\automation\autoload` (you can paste that directly into the Windows Explorer navigation bar).
 4. Extract the contents of the zip file directly into the `autoload` folder. Your file structure should look like this:  
@@ -61,7 +61,8 @@ Did you read it? Understand it? Good.
 
 The first step to using Clipper is to download the video you want to make a clip from.
 There are tons of YouTube downloaders out there, as well as downloaders for any other
-video site you can imagine, so I won't walk you through this step.
+video site you can imagine, so I won't walk you through this step. For the record,
+I use youtube-dl.
 
 Once you have the video downloaded, open it in Aegisub and save a new subtitles file.
 Clipper requires a saved subtitles file, and will only show saved changes in its output,

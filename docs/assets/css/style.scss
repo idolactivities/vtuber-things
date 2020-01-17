@@ -6,8 +6,12 @@
 .clipper-toc {
 	background-color: white;
 	width: fit-content;
-	padding-right: 10px;
-	padding-top: 5px;
-	padding-bottom: 5px;
+	padding: 10px 10px 10px 30px;
 	font-weight: bold;
+	box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+p img {
+	display: block;
+	margin: 0 auto;
 }

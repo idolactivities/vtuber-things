@@ -12,7 +12,7 @@ https://lyger.github.io/scripts/guides/clipper.html
 
 script_name = 'Clipper'
 script_description = 'Encode a video clip based on the subtitles.'
-script_version = '0.1'
+script_version = '1.0.0'
 
 clipboard = require('aegisub.clipboard')
 
@@ -26,7 +26,7 @@ ENCODE_PRESETS = {
         extension = '.mp4'
     },
     ['YouTube Encode (slow, WebM)'] = {
-        options = '-c:v libvpx-vp9 -crf 20 -b:v 0 -c:a libopus',
+        options = '-c:v libvpx-vp9 -row-mt 1 -cpu-used 2 -crf 30 -b:v 0 -c:a libopus',
         extension = '.webm'
     }
 }
@@ -259,15 +259,18 @@ function estimate_frames(segment_inputs)
     return frame_count
 end
 
-function run_as_batch(cmd, callback)
+function run_as_batch(cmd, callback, mode)
     local temp_file = aegisub.decode_path('?temp/clipper.bat')
     local fh = io.open(temp_file, 'w')
+    fh:write('setlocal\r\n')
     fh:write(cmd .. '\r\n')
+    fh:write('endlocal\r\n')
     fh:close()
 
     local res = nil
     -- If a callback is provided, run it on the process output
     if callback ~= nil then
+        if mode == nil then mode = 'r' end
         local pipe = assert(io.popen('"' .. temp_file .. '"', 'r'))
         callback(pipe)
         res = {pipe:close()}
@@ -287,7 +290,7 @@ function id_colorspace(video)
 
     local cmd = ('"%s" -show_streams -select_streams v "%s"'):format(FFPROBE, video)
 
-    run_as_batch(
+    local res = run_as_batch(
         cmd,
         function(pipe)
             for line in pipe:lines() do
@@ -312,7 +315,7 @@ function id_colorspace(video)
     end
 end
 
-function encode_cmd(video, ss, to, options, filter, output)
+function encode_cmd(video, ss, to, options, filter, output, logfile_path)
     local command = {
         ('"%s"'):format(FFMPEG),
         ('-ss %s -to %s -i "%s" -copyts'):format(ss, to, video),
@@ -320,8 +323,7 @@ function encode_cmd(video, ss, to, options, filter, output)
         ('-filter_complex "%s" -map "[vo]" -map "[ao]"'):format(filter),
         ('-color_primaries %s -color_trc %s -colorspace %s'):format(
             id_colorspace(video)),
-        ('"%s"'):format(output),
-        '2>&1' -- stderr to stdout
+        ('"%s"'):format(output)
     }
 
     local frame_ms = aegisub.ms_from_frame(1) - aegisub.ms_from_frame(0)
@@ -329,7 +331,11 @@ function encode_cmd(video, ss, to, options, filter, output)
         table.insert(command, 2, ('-itsoffset -%0.3f'):format(frame_ms / 1000))
     end
 
-    return table.concat(command, ' ')
+    local set_env = ('set "FFREPORT=file=%s:level=32"\r\n'):format(
+        logfile_path:gsub('\\', '\\\\'):gsub(':', '\\:')
+    )
+
+    return set_env .. table.concat(command, ' ')
 end
 
 -----------------------------
@@ -403,7 +409,7 @@ function init_config()
         'welcome',
         'Welcome to Clipper! If this is your first time\n' ..
         'using Clipper, please read the guide here:\n\n' ..
-        'https://lyger.github.io/scripts/guides/clipper.html',
+        'https://lyger.github.io/scripts/guides/clipper.html#usage',
         false
     )
 
@@ -621,28 +627,12 @@ function clipper(sub, sel, _)
     seek_end = seek_end + 5
 
     local cmd = encode_cmd(video_path, seek_start, seek_end, options,
-                           filter, output_path)
-
-    -- Save the output to the log file
-    local log_fh = io.open(logfile_path, 'w')
+                           filter, output_path, logfile_path)
 
     local total_frames = estimate_frames(segment_inputs)
 
-    res = run_as_batch(
-        cmd,
-        function(pipe)
-            for line in pipe:lines() do
-                log_fh:write(line .. '\n')
-                for fnum in line:gmatch('frame=%s*(%d+)') do
-                    fnum = tonumber(fnum)
-                    aegisub.progress.set(math.floor(100 * fnum / total_frames))
-                    aegisub.progress.task(('Encoding frame %d/%d'):format(fnum, total_frames))
-                end
-            end
-        end
-    )
-
-    log_fh:close()
+    aegisub.progress.task('Encoding your video...')
+    res = run_as_batch(cmd)
 
     if res == nil then
         show_info((
