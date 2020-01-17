@@ -1,4 +1,9 @@
-Under construction.
+---
+has_toc: false
+---
+
+A growing collection of resources and opinionated guides and articles about subtitling,
+translating, and VTuber-related matters.
 
 # Guides
 

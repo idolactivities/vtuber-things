@@ -1,3 +1,7 @@
+---
+has_toc: false
+---
+
 [Home](../index.md) » VTubers
 
 # VTubers

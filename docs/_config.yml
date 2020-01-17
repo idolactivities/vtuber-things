@@ -1,3 +1,10 @@
 theme: jekyll-theme-slate
 title: Clipping Tools and Guides
 description: For VTuber fans and more
+defaults:
+  -
+    scope:
+      path: ""
+      type: "posts"
+    values:
+      has_toc: true
