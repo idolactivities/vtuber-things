@@ -34,7 +34,7 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        {% if site.has_toc %}
+        {% if page.has_toc %}
           {% include toc.html html=content h_min=2 class="clipper-toc" ordered=true %}
         {% endif %}
         {{ content }}
