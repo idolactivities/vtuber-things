@@ -3,9 +3,21 @@
 
 @import "{{ site.theme }}";
 
+.clipper-toc::before {
+	display: block;
+	width: 100%;
+	content: "Contents";
+	margin-left: -10px;
+	font-size: 1.25em;
+	text-align: center;
+}
+
 .clipper-toc {
 	background-color: white;
 	width: fit-content;
+	max-width: 30%;
+	float: right;
+	margin-left: 20px;
 	padding: 10px 10px 10px 30px;
 	font-weight: bold;
 	box-shadow: 0 0 10px rgba(0,0,0,0.1);
