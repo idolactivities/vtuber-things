@@ -8,3 +8,6 @@ defaults:
       type: "pages"
     values:
       has_toc: true
+      show_downloads: false
+      github:
+        is_project_page: false

@@ -1,3 +1,11 @@
+---
+show_downloads: true
+github:
+  is_project_page: true
+  zip_url: https://github.com/lyger/scripts/releases/download/v1.0/clipper.zip
+  repository_url: https://github.com/lyger/scripts/tree/master/aegisub/clipper-windows
+---
+
 [Home](../index.md) » [Guides](index.md) » Clipper
 
 # Clipper
