@@ -90,7 +90,7 @@ quietly or be the first brave person to speak up. Maybe some other people will s
 
 It may seem like I've written a wall of text about "don't do this" and "don't do that", but again,
 **all of it should be common sense and common courtesy**. You don't have to memorize a rulebook
-to participate in a stream. Just don't be an asshole.
+to participate in a stream. Just be a decent person.
 
 Even if the streamer can't understand most of what you say, they can tell who's actually engaged
 and who's just spamming. So if you want to show your support, to show that you're having fun—go ahead!

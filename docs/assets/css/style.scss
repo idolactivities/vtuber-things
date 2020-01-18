@@ -17,6 +17,7 @@
 	width: fit-content;
 	max-width: 30%;
 	float: right;
+	margin-top: 10px;
 	margin-left: 20px;
 	padding: 10px 10px 10px 30px;
 	font-weight: bold;
@@ -26,4 +27,13 @@
 p img {
 	display: block;
 	margin: 0 auto;
+}
+
+@media screen and (max-width: 480px) {
+	.clipper-toc {
+		float: none;
+		width: auto;
+		margin-left: 0;
+		max-width: 100%;
+	}
 }

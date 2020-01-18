@@ -19,7 +19,7 @@ Remember, your viewers will be looking at this font for the entire video.
 
 Don't know where to start looking for your main font?
 Try [Google fonts](https://fonts.google.com/?thickness=8&category=Sans+Serif).
-That link should will you a collection of free, thick, sans-serif fonts from
+That link will show you a listing of free, thick, sans-serif fonts from
 Google's collection, most of which are good for subtitles.
 You can adjust the thickness slider up or down a step to see more decent options.
 
