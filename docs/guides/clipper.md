@@ -115,7 +115,7 @@ I've also added descriptions of what happens in each segment and some subtitles.
 
 When you are done creating your subtitles and segments, it's time to run Clipper.
 Select the commented lines that you want to make a clip from (hold shift or ctrl to select multiple lines).
-In my example,t hat would be the two lines at the top. Then, from the "Automation" menu at the top,
+In my example, that would be the two lines at the top. Then, from the "Automation" menu at the top,
 select "Clipper". That should bring up this dialog:
 
 ![Clipper menu](/scripts/assets/img/guides_clipper_clipper_menu.png)
@@ -144,6 +144,8 @@ or folder names? Try renaming your files and folders to only use English charact
    box for UTF-8 support.
 
    ![Change system locale](/scripts/assets/img/guides_clipper_locale_settings.png)
+ 5. If you're still having issues, please report the problem by
+ [submitting an issue on Github](https://github.com/lyger/scripts/issues).
 
 ## Credits
 
