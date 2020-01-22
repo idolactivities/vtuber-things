@@ -2,7 +2,7 @@
 Creates easy video clips from Aegisub.
 
 Guide here:
-https://lyger.github.io/scripts/guides/clipper.html
+https://idolactivities.github.io/vtuber-things/guides/clipper.html
 
 ]] --
 
@@ -409,7 +409,7 @@ function init_config()
         'welcome',
         'Welcome to Clipper! If this is your first time\n' ..
         'using Clipper, please read the guide here:\n\n' ..
-        'https://lyger.github.io/scripts/guides/clipper.html#usage',
+        'https://idolactivities.github.io/vtuber-things/guides/clipper.html#usage',
         false
     )
 
@@ -638,7 +638,7 @@ function clipper(sub, sel, _)
         show_info((
             'FFmpeg failed to complete! Try the troubleshooting\n' ..
             'here to figure out what\'s wrong:\n\n' ..
-            'https://lyger.github.io/scripts/guides/clipper.html#troubleshooting\n\n' ..
+            'https://idolactivities.github.io/vtuber-things/guides/clipper.html#troubleshooting\n\n' ..
             'Detailed information saved to:\n\n%s'
         ):format(logfile_path))
         aegisub.cancel()
