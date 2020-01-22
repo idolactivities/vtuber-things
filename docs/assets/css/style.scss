@@ -1,0 +1,64 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+.clipper-toc::before {
+    display: block;
+    width: 100%;
+    content: "Contents";
+    margin-left: -10px;
+    font-size: 1.25em;
+    text-align: center;
+}
+
+.clipper-toc {
+    background-color: white;
+    width: fit-content;
+    max-width: 30%;
+    float: right;
+    margin-top: 10px;
+    margin-left: 20px;
+    padding: 10px 10px 10px 30px;
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+p img {
+    display: block;
+    margin: 0 auto;
+}
+
+@media screen and (max-width: 480px) {
+    .clipper-toc {
+        float: none;
+        width: auto;
+        margin-left: 0;
+        max-width: 100%;
+    }
+}
+
+#downloads {
+    display: table;
+    background: none;
+}
+
+.zip_download_link > span {
+    right: 90px;
+    position: absolute;
+    bottom: 5px;
+    text-indent: 0;
+    font-weight: bold;
+    font-size: 1.25em;
+}
+
+.zip_download_link > span::before {
+    display: block;
+    content: "";
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    left: 0;
+    margin-left: -30px;
+    background: url(../images/icon_download.png);
+}

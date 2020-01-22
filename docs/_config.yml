@@ -1,0 +1,13 @@
+theme: jekyll-theme-slate
+title: Clipping Tools and Guides
+description: For VTuber fans and more
+defaults:
+  -
+    scope:
+      path: ""
+      type: "pages"
+    values:
+      has_toc: true
+      show_downloads: false
+      github:
+        is_project_page: false
