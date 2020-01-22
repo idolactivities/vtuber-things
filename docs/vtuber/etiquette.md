@@ -26,6 +26,15 @@ you don't understand, here's some things to keep in mind.
 **The short version is all you need, as long as you actually follow it.**
 But there are some points that could benefit from more detail or clarification:
 
+> ### Aside: "Real Identities"
+> I'll be blunt: yes, VTubers are real people playing characters. I understand
+> that this tends to make people curious, but if the VTuber does not publicly reveal
+> personal details, *please do not pry*. That would be invading their privacy.
+>
+> And no, "5ch dug up this information" does *not* count as "publicly revealing".
+> If it doesn't come directly from the VTuber, *it is doxing*. Just know that the vast majority
+> of VTubers do not make their other online identities public, much less personal information.
+
 ### So how do I communicate with the streamer?
 
 Be polite, don't spam or pester, and a kind person in chat might translate for you.
