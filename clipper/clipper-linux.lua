@@ -4,7 +4,7 @@ Creates a hardsubbed video clip from selected lines.
 script_name = "Clipper"
 script_description =
     "Encode a video clip by reading start and end times from the selected lines."
-script_version = "1.0"
+script_version = "1.0.1"
 
 FFMPEG = "ffmpeg"
 FFPROBE = "ffprobe"
@@ -13,12 +13,16 @@ ENCODE_PRESETS = {
         options = "-c:v libx264 -preset ultrafast -tune zerolatency -c:a aac",
         extension = ".mp4"
     },
-    ["Twitter Encode (quick, OK quality)"] = {
+    ["Twitter Encode (quick and OK quality, MP4)"] = {
         options = "-c:v libx264 -preset slow -profile:v high -level 3.2 -tune film -c:a aac",
         extension = ".mp4"
     },
-    ["YouTube Encode (slow, WebM)"] = {
-        options = "-c:v libvpx-vp9 -crf 20 -b:v 0 -c:a libopus",
+    ["YouTube Encode (quick and good quality, MP4)"] = {
+        options = "-c:v libx264 -preset slow -profile:v high -level 4.2 -crf 20 -c:a aac",
+        extension = ".mp4"
+    },
+    ["YouTube Encode (very slow but better quality/size, WebM)"] = {
+        options = '-c:v libvpx-vp9 -row-mt 1 -cpu-used 2 -crf 20 -b:v 0 -c:a libopus',
         extension = ".webm"
     }
 }

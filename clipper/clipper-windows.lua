@@ -5,14 +5,12 @@ Guide here:
 https://idolactivities.github.io/vtuber-things/guides/clipper.html
 
 ]] --
-
 ---------------------
 -- BASIC CONSTANTS --
 ---------------------
-
 script_name = 'Clipper'
 script_description = 'Encode a video clip based on the subtitles.'
-script_version = '1.0.0'
+script_version = '1.0.1'
 
 clipboard = require('aegisub.clipboard')
 
@@ -21,19 +19,23 @@ ENCODE_PRESETS = {
         options = '-c:v libx264 -preset ultrafast -tune zerolatency -c:a aac',
         extension = '.mp4'
     },
-    ['Twitter Encode (quick, OK quality)'] = {
-        options = '-c:v libx264 -preset slow -profile:v high -level 3.2 -tune film -c:a aac',
-        extension = '.mp4'
+    ["Twitter Encode (quick and OK quality, MP4)"] = {
+        options = "-c:v libx264 -preset slow -profile:v high -level 3.2 -tune film -c:a aac",
+        extension = ".mp4"
     },
-    ['YouTube Encode (slow, WebM)'] = {
-        options = '-c:v libvpx-vp9 -row-mt 1 -cpu-used 2 -crf 30 -b:v 0 -c:a libopus',
-        extension = '.webm'
+    ["YouTube Encode (quick and good quality, MP4)"] = {
+        options = "-c:v libx264 -preset slow -profile:v high -level 4.2 -crf 20 -c:a aac",
+        extension = ".mp4"
+    },
+    ["YouTube Encode (very slow but better quality/size, WebM)"] = {
+        options = '-c:v libvpx-vp9 -row-mt 1 -cpu-used 2 -crf 20 -b:v 0 -c:a libopus',
+        extension = ".webm"
     }
 }
 
 CONFIG_PATH = aegisub.decode_path('?user/clipper.conf')
 
-global_config = { version = script_version }
+global_config = {version = script_version}
 
 -------------------
 -- GENERAL UTILS --
@@ -62,11 +64,7 @@ function table.values(tb)
     return values
 end
 
-function table.update(t1, t2)
-    for k, v in pairs(t2) do
-        t1[k] = v
-    end
-end
+function table.update(t1, t2) for k, v in pairs(t2) do t1[k] = v end end
 
 --------------------------
 -- FIND FFMPEG BINARIES --
@@ -75,11 +73,13 @@ end
 function find_bin_or_error(name)
     -- Check user directory
     -- This should take precedence, as it is recommended by the install instructions
-    local file = aegisub.decode_path(('?user/automation/autoload/bin/%s'):format(name))
+    local file = aegisub.decode_path(
+                     ('?user/automation/autoload/bin/%s'):format(name))
     if file_exists(file) then return file end
 
     -- If that fails, check install directory
-    local file = aegisub.decode_path(('?data/automation/autoload/bin/%s'):format(name))
+    local file = aegisub.decode_path(
+                     ('?data/automation/autoload/bin/%s'):format(name))
     if file_exists(file) then return file end
 
     -- If that fails, check for executable in path
@@ -90,11 +90,9 @@ function find_bin_or_error(name)
     end
 
     -- Else, error
-    error((
-        'Could not find %s.' ..
-        'Make sure it is in Aegisub\'s "automation/autoload/bin" folder ' ..
-        'or in your PATH.'
-    ):format(name))
+    error(('Could not find %s.' ..
+              'Make sure it is in Aegisub\'s "automation/autoload/bin" folder ' ..
+              'or in your PATH.'):format(name))
 end
 
 FFMPEG = find_bin_or_error('ffmpeg.exe')
@@ -111,7 +109,7 @@ function manual_segment(sub, sel)
     for _, si in ipairs(sel) do
         line = sub[si]
         -- Skip lines with zero duration
-        if  line.end_time > line.start_time then
+        if line.end_time > line.start_time then
             table.insert(line_timings, {line.start_time, line.end_time})
         end
         if not line.comment then warn_uncomment = true end
@@ -145,12 +143,10 @@ function manual_segment(sub, sel)
     table.insert(segment_inputs, segments)
 
     if warn_uncomment then
-        show_help(
-            'manual segment uncommented',
-            'Some of your selected lines were uncommented.\n' ..
-            'It\'s recommended to define your segments using\n' ..
-            'commented lines. Check that you meant to do this.'
-        )
+        show_help('manual segment uncommented',
+                  'Some of your selected lines were uncommented.\n' ..
+                      'It\'s recommended to define your segments using\n' ..
+                      'commented lines. Check that you meant to do this.')
     end
 
     return segment_inputs
@@ -253,7 +249,8 @@ function estimate_frames(segment_inputs)
     local frame_count = 0
     for _, segments in ipairs(segment_inputs) do
         for _, segment in ipairs(segments) do
-            frame_count = frame_count + math.floor((segment[2] - segment[1]) / fr)
+            frame_count = frame_count +
+                              math.floor((segment[2] - segment[1]) / fr)
         end
     end
     return frame_count
@@ -275,7 +272,7 @@ function run_as_batch(cmd, callback, mode)
         callback(pipe)
         res = {pipe:close()}
         res = res[1]
-    -- Otherwise, just execute it
+        -- Otherwise, just execute it
     else
         res = os.execute('"' .. temp_file .. '"')
     end
@@ -288,19 +285,17 @@ end
 function id_colorspace(video)
     local values = {}
 
-    local cmd = ('"%s" -show_streams -select_streams v "%s"'):format(FFPROBE, video)
+    local cmd = ('"%s" -show_streams -select_streams v "%s"'):format(FFPROBE,
+                                                                     video)
 
-    local res = run_as_batch(
-        cmd,
-        function(pipe)
-            for line in pipe:lines() do
-                if line:match('^color') then
-                    local key, value = line:match('^([%w_]+)=(%w+)$')
-                    if key then values[key] = value end
-                end
+    local res = run_as_batch(cmd, function(pipe)
+        for line in pipe:lines() do
+            if line:match('^color') then
+                local key, value = line:match('^([%w_]+)=(%w+)$')
+                if key then values[key] = value end
             end
         end
-    )
+    end)
 
     -- https://kdenlive.org/en/project/color-hell-ffmpeg-transcoding-and-preserving-bt-601/
     if values['color_space'] == 'bt470bg' then
@@ -318,12 +313,10 @@ end
 function encode_cmd(video, ss, to, options, filter, output, logfile_path)
     local command = {
         ('"%s"'):format(FFMPEG),
-        ('-ss %s -to %s -i "%s" -copyts'):format(ss, to, video),
-        options,
+        ('-ss %s -to %s -i "%s" -copyts'):format(ss, to, video), options,
         ('-filter_complex "%s" -map "[vo]" -map "[ao]"'):format(filter),
         ('-color_primaries %s -color_trc %s -colorspace %s'):format(
-            id_colorspace(video)),
-        ('"%s"'):format(output)
+            id_colorspace(video)), ('"%s"'):format(output)
     }
 
     local frame_ms = aegisub.ms_from_frame(1) - aegisub.ms_from_frame(0)
@@ -332,8 +325,7 @@ function encode_cmd(video, ss, to, options, filter, output, logfile_path)
     end
 
     local set_env = ('set "FFREPORT=file=%s:level=32"\r\n'):format(
-        logfile_path:gsub('\\', '\\\\'):gsub(':', '\\:')
-    )
+                        logfile_path:gsub('\\', '\\\\'):gsub(':', '\\:'))
 
     return set_env .. table.concat(command, ' ')
 end
@@ -355,30 +347,26 @@ function show_info(message, extra)
         {class = 'label', label = '    ', x = 0, y = 0, width = 1, height = 1},
         {class = 'label', label = message, x = 1, y = 1, width = 1, height = 1}
     }
-    
+
     if extra ~= nil and type(extra) == 'table' then
-        for _, control in ipairs(extra) do
-            table.insert(dialog, control)
-        end
+        for _, control in ipairs(extra) do table.insert(dialog, control) end
     end
 
     -- Bottom right margin
-    table.insert(
-        dialog,
-        {class = 'label', label = '    ', x = 2, y = dialog[#dialog].y + 1, width = 1, height = 1}
-    )
+    table.insert(dialog, {
+        class = 'label',
+        label = '    ',
+        x = 2,
+        y = dialog[#dialog].y + 1,
+        width = 1,
+        height = 1
+    })
 
     local is_okay = nil
     while is_okay ~= 'OK' do
-        is_okay, results = aegisub.dialog.display(
-            dialog,
-            buttons,
-            button_ids
-        )
+        is_okay, results = aegisub.dialog.display(dialog, buttons, button_ids)
 
-        if is_okay == 'Copy link' then
-            clipboard.set(link)
-        end
+        if is_okay == 'Copy link' then clipboard.set(link) end
     end
     return results
 end
@@ -390,10 +378,18 @@ function show_help(key, message, show_hide_confirmation)
 
     local extras = nil
     if show_hide_confirmation then
-        extras = {{
-            class = 'checkbox', label = 'Don\'t show this message again',
-            name = 'skip', value = false, x = 1, y = 3, width = 1, height = 1,
-        }}
+        extras = {
+            {
+                class = 'checkbox',
+                label = 'Don\'t show this message again',
+                name = 'skip',
+                value = false,
+                x = 1,
+                y = 3,
+                width = 1,
+                height = 1
+            }
+        }
     end
 
     results = show_info(message, extras)
@@ -405,13 +401,10 @@ function init_config()
     global_config['preset'] = table.keys(ENCODE_PRESETS)[1]
     global_config['skip_help'] = {}
 
-    show_help(
-        'welcome',
-        'Welcome to Clipper! If this is your first time\n' ..
-        'using Clipper, please read the guide here:\n\n' ..
-        'https://idolactivities.github.io/vtuber-things/guides/clipper.html#usage',
-        false
-    )
+    show_help('welcome', 'Welcome to Clipper! If this is your first time\n' ..
+                  'using Clipper, please read the guide here:\n\n' ..
+                  'https://idolactivities.github.io/vtuber-things/guides/clipper.html#usage',
+              false)
 
     save_config()
 end
@@ -449,14 +442,16 @@ function load_config()
         line = line:match('%s*(.+)')
 
         -- Skip empty lines and comments
-        if line and line:sub( 1, 1 ) ~= '#' and line:sub( 1, 1 ) ~= ';' then
+        if line and line:sub(1, 1) ~= '#' and line:sub(1, 1) ~= ';' then
             option, value = line:match('(%S+)%s*[=:]%s*(.*)')
 
             -- Lists always end in a comma
             if value:sub(-1) == ',' then
                 values = {}
                 -- But we store them as keys for easy indexing
-                for k in value:gmatch('%s*([^,]+),') do values[k] = true end
+                for k in value:gmatch('%s*([^,]+),') do
+                    values[k] = true
+                end
                 conf[option] = values
             else
                 conf[option] = value
@@ -518,14 +513,7 @@ end
 
 function select_clip_options(clipname)
     local config = {
-        {
-            class = 'label',
-            label = 'Preset',
-            x = 0,
-            y = 0,
-            width = 1,
-            height = 1
-        },
+        {class = 'label', label = 'Preset', x = 0, y = 0, width = 1, height = 1},
         {
             class = 'dropdown',
             name = 'preset',
@@ -543,8 +531,7 @@ function select_clip_options(clipname)
             y = 1,
             width = 1,
             height = 1
-        },
-        {
+        }, {
             class = 'edit',
             name = 'clipname',
             value = clipname,
@@ -587,10 +574,9 @@ function clipper(sub, sel, _)
 
     if file_exists(output_path) then
         if output_path == video_path then
-            show_info((
-                'The specified output file (%s) is the same as\n' ..
-                'the input file, which isn\'t allowed. Specify\n' ..
-                'a different clip name instead.'):format(output_path))
+            show_info(('The specified output file (%s) is the same as\n' ..
+                          'the input file, which isn\'t allowed. Specify\n' ..
+                          'a different clip name instead.'):format(output_path))
             aegisub.cancel()
         end
         confirm_overwrite(output_path)
@@ -602,11 +588,9 @@ function clipper(sub, sel, _)
     local segment_inputs = manual_segment(sub, sel)
 
     if #segment_inputs == 0 or #segment_inputs[1] == 0 then
-        show_info(
-            'Unable to find or create segments to clip.\n' ..
-            'Does your selection contain lines with\n' ..
-            'non-zero duration?'
-        )
+        show_info('Unable to find or create segments to clip.\n' ..
+                      'Does your selection contain lines with\n' ..
+                      'non-zero duration?')
         aegisub.cancel()
     end
 
@@ -626,8 +610,8 @@ function clipper(sub, sel, _)
     -- Add extra leeway to the seek
     seek_end = seek_end + 5
 
-    local cmd = encode_cmd(video_path, seek_start, seek_end, options,
-                           filter, output_path, logfile_path)
+    local cmd = encode_cmd(video_path, seek_start, seek_end, options, filter,
+                           output_path, logfile_path)
 
     local total_frames = estimate_frames(segment_inputs)
 
@@ -635,12 +619,11 @@ function clipper(sub, sel, _)
     res = run_as_batch(cmd)
 
     if res == nil then
-        show_info((
-            'FFmpeg failed to complete! Try the troubleshooting\n' ..
-            'here to figure out what\'s wrong:\n\n' ..
-            'https://idolactivities.github.io/vtuber-things/guides/clipper.html#troubleshooting\n\n' ..
-            'Detailed information saved to:\n\n%s'
-        ):format(logfile_path))
+        show_info(('FFmpeg failed to complete! Try the troubleshooting\n' ..
+                      'here to figure out what\'s wrong:\n\n' ..
+                      'https://idolactivities.github.io/vtuber-things/guides/clipper.html#troubleshooting\n\n' ..
+                      'Detailed information saved to:\n\n%s'):format(
+                      logfile_path))
         aegisub.cancel()
     end
 
@@ -649,15 +632,11 @@ function clipper(sub, sel, _)
 end
 
 function validate_clipper(sub, sel, _)
-    if aegisub.decode_path('?script') == '?script'
-        or aegisub.decode_path('?video') == '?video'
-    then
-        return false
-    end
+    if aegisub.decode_path('?script') == '?script' or
+        aegisub.decode_path('?video') == '?video' then return false end
     return true
 end
 
-aegisub.register_macro(
-    script_name, script_description, clipper, validate_clipper
-)
+aegisub.register_macro(script_name, script_description, clipper,
+                       validate_clipper)
 
