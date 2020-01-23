@@ -37,7 +37,7 @@ good-looking and easy to read.
 
 This installation guide is for **Windows users only**.
 Mac and Linux users should install `ffmpeg` using a package manager and save the
-[Linux version of Clipper](https://github.com/idolactivities/vtuber-things/blob/master/clipper/clipper-linux.lua)
+[Linux version of Clipper]({{ site.github.repository_url }}/blob/master/clipper/clipper-linux.lua)
 to Aegisub's `automation/autoload` directory.
 
 1. Download and install Aegisub (see previous section). **Old versions of Aegisub may not be compatible.**
@@ -145,7 +145,7 @@ or folder names? Try renaming your files and folders to only use English charact
 
    ![Change system locale]({{ '/assets/img/guides_clipper_locale_settings.png' | relative_url }})
  5. If you're still having issues, please report the problem by
- [submitting an issue on Github](https://github.com/idolactivities/vtuber-things/issues).
+ [submitting an issue on Github]({{ site.github.repository_url }}/issues).
 
 ## Credits
 
