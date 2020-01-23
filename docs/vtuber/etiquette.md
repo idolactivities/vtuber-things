@@ -3,7 +3,7 @@
 # Stream Etiquette
 
 If you're watching a VTuber stream in Japanese or another language
-you don't understand, here's some things to keep in mind.
+you don't understand, here are some things to keep in mind.
 
 ## The Short Version
 
@@ -60,6 +60,10 @@ and *not* their lunch or that game of Apex they played yesterday.
 On the other hand, if other viewers see people using chat as their personal Twitter or spamming memes,
 they'll decide it's okay for them to do the same. This spoils the fun for both the streamer
 and everyone else in chat.
+
+An on-topic chat also helps people follow what's going on in the stream. If the viewers who
+understand some Japanese comment about what's happening, then the viewers who don't understand
+anything can see their reactions and enjoy the stream more.
 
 It's also *very* rude to randomly start talking about a different streamer.
 Not only is it disrespectful to the streamer you are watching,
