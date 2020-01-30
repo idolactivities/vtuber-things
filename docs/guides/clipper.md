@@ -2,8 +2,8 @@
 show_downloads: true
 github:
   is_project_page: true
-  repository_url: https://github.com/idolactivities/vtuber-things/tree/clipper-v1.0/clipper
-  zip_url: https://github.com/idolactivities/vtuber-things/releases/download/clipper-v1.0/clipper.zip
+  repository_url: https://github.com/idolactivities/vtuber-things/tree/clipper-v1.0.1/clipper
+  zip_url: https://github.com/idolactivities/vtuber-things/releases/download/clipper-v1.0.1/clipper.zip
 ---
 
 [Home](../index.md) » [Guides](index.md) » Clipper
