@@ -2,8 +2,8 @@
 show_downloads: true
 github:
   is_project_page: true
-  zip_url: https://github.com/lyger/scripts/releases/download/v1.0/clipper.zip
-  repository_url: https://github.com/lyger/scripts/tree/master/aegisub/clipper-windows
+  repository_url: https://github.com/idolactivities/vtuber-things/tree/clipper-v1.0/clipper
+  zip_url: https://github.com/idolactivities/vtuber-things/releases/download/clipper-v1.0/clipper.zip
 ---
 
 [Home](../index.md) » [Guides](index.md) » Clipper
@@ -36,8 +36,8 @@ good-looking and easy to read.
 ## Installation
 
 This installation guide is for **Windows users only**.
-Mac and Linux users should install `ffmpeg` using a package manager and save
-[lae's version of Clipper](https://github.com/idolactivities/scripts/blob/master/aegisub/clipper.lua)
+Mac and Linux users should install `ffmpeg` using a package manager and save the
+[Linux version of Clipper]({{ site.github.repository_url }}/blob/master/clipper/clipper-linux.lua)
 to Aegisub's `automation/autoload` directory.
 
 1. Download and install Aegisub (see previous section). **Old versions of Aegisub may not be compatible.**
@@ -93,8 +93,8 @@ in the video and ends at 8:04.85. If I select that line and run Clipper, it will
 cut out the part of the video between 7:50.62 and 8:04.85. If I had any subtitles in the
 file, it would also add those to the video.
 
-<a href="/scripts/assets/img/guides_clipper_manual_segment_01.png" target="_blank">
-  <img src="/scripts/assets/img/guides_clipper_manual_segment_01.png" width="520" alt="Click to enlarge" title="Click to enlarge"/>
+<a href="{{ '/assets/img/guides_clipper_manual_segment_01.png' | relative_url }}" target="_blank">
+  <img src="{{ '/assets/img/guides_clipper_manual_segment_01.png' | relative_url }}" width="520" alt="Click to enlarge" title="Click to enlarge"/>
 </a>
 
 You should always comment the lines you use to define your segments, because they are not
@@ -109,8 +109,8 @@ I've created two segments (the commented lines at the top): one starts at around
 and ends at around 8:04, and the other starts at around 32:11 and ends at around 32:57.
 I've also added descriptions of what happens in each segment and some subtitles.
 
-<a href="/scripts/assets/img/guides_clipper_manual_segment_02.png" target="_blank">
-  <img src="/scripts/assets/img/guides_clipper_manual_segment_02.png" width="520" alt="Click to enlarge" title="Click to enlarge"/>
+<a href="{{ '/assets/img/guides_clipper_manual_segment_02.png' | relative_url }}" target="_blank">
+  <img src="{{ '/assets/img/guides_clipper_manual_segment_02.png' | relative_url }}" width="520" alt="Click to enlarge" title="Click to enlarge"/>
 </a>
 
 When you are done creating your subtitles and segments, it's time to run Clipper.
@@ -118,7 +118,7 @@ Select the commented lines that you want to make a clip from (hold shift or ctrl
 In my example, that would be the two lines at the top. Then, from the "Automation" menu at the top,
 select "Clipper". That should bring up this dialog:
 
-![Clipper menu](/scripts/assets/img/guides_clipper_clipper_menu.png)
+![Clipper menu]({{ '/assets/img/guides_clipper_clipper_menu.png' | relative_url }})
 
 * **Preset** – The quality settings to use when encoding the clip.
 Choose one based on what you plan to do with the final video.
@@ -143,9 +143,9 @@ or folder names? Try renaming your files and folders to only use English charact
    "Administrative language settings", click on "Change system locale", and check the
    box for UTF-8 support.
 
-   ![Change system locale](/scripts/assets/img/guides_clipper_locale_settings.png)
+   ![Change system locale]({{ '/assets/img/guides_clipper_locale_settings.png' | relative_url }})
  5. If you're still having issues, please report the problem by
- [submitting an issue on Github](https://github.com/lyger/scripts/issues).
+ [submitting an issue on Github]({{ site.github.repository_url }}/issues).
 
 ## Credits
 
