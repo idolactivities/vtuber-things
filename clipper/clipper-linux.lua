@@ -10,7 +10,7 @@ FFMPEG = "ffmpeg"
 FFPROBE = "ffprobe"
 ENCODE_PRESETS = {
     ["Test Encode (fast)"] = {
-        options = "-c:v libx264 -preset ultrafast -tune zerolatency -c:a aac",
+        options = "-c:v libx264 -preset ultrafast -tune zerolatency -s 1280x720 -c:a aac",
         extension = ".mp4"
     },
     ["Twitter Encode (quick and OK quality, MP4)"] = {
