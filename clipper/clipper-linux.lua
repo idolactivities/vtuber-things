@@ -2,8 +2,7 @@
 Creates a hardsubbed video clip from selected lines.
 ]] --
 script_name = "Clipper"
-script_description =
-    "Encode a video clip by reading start and end times from the selected lines."
+script_description = "Encode a video clip by reading start and end times from the selected lines."
 script_version = "1.0.1"
 
 FFMPEG = "ffmpeg"
@@ -59,28 +58,23 @@ function id_colorspace(video)
         if values["color_space"] == "smpte170m" then
             return "smpte170m", "smpte170m", "smpte170m"
         else
-            return values["color_space"], values["color_transfer"],
-                   values["color_primaries"]
+            return values["color_space"], values["color_transfer"], values["color_primaries"]
         end
     end
 end
 
 function encode_cmd(video, ss, to, options, filter, output, logfile)
     local command = {
-        ('%q'):format(FFMPEG),
-        ('-ss %s -to %s -i %q -copyts'):format(ss, to, video), options,
+        ('%q'):format(FFMPEG), ('-ss %s -to %s -i %q -copyts'):format(ss, to, video), options,
         ('-filter_complex %q -map "[vo]" -map "[ao]"'):format(filter),
-        ('-color_primaries %s -color_trc %s -colorspace %s'):format(
-            id_colorspace(video)), ('%q'):format(output),
+        ('-color_primaries %s -color_trc %s -colorspace %s'):format(id_colorspace(video)), ('%q'):format(output),
         ('2> %q'):format(logfile)
     }
     -- add a input video read offset if our video FPS is 50+ to fix off-by-one
     -- frame errors in 60FPS videos (haven't tested on 50FPS videos though, I
     -- just picked a number close to 17)
     local frame_ms = aegisub.ms_from_frame(1) - aegisub.ms_from_frame(0)
-    if frame_ms <= 20 then
-        table.insert(command, 2, ('-itsoffset -%0.3f'):format(frame_ms / 1000))
-    end
+    if frame_ms <= 20 then table.insert(command, 2, ('-itsoffset -%0.3f'):format(frame_ms / 1000)) end
     return table.concat(command, ' ')
 end
 
@@ -115,8 +109,7 @@ function build_segments(sub, sel, explicit)
     if explicit then
         for i = 2, #line_timings do
             local previous_end = segments[#segments][2]
-            if line_timings[i][1] >= previous_end and line_timings[i][1] -
-                previous_end <= frame_duration then
+            if line_timings[i][1] >= previous_end and line_timings[i][1] - previous_end <= frame_duration then
                 -- merge lines if they're right after one another
                 segments[#segments][2] = line_timings[i][2]
             elseif line_timings[i][1] > previous_end then
@@ -135,11 +128,12 @@ function build_segments(sub, sel, explicit)
     else
         for i = 2, #line_timings do
             local previous_end = segments[#segments][2]
-            if line_timings[i][1] >= previous_end and line_timings[i][1] -
-                previous_end <= 500 then
+            if line_timings[i][1] >= previous_end and line_timings[i][1] - previous_end <= 500 then
                 -- merge lines with less than 500ms gap
                 segments[#segments][2] = line_timings[i][2]
-                -- todo: need to identify whether or not selected line is within current segment
+                -- elseif tlines[i][2] <= previous_end then
+                -- skip since the line overlaps with an earlier line
+                -- need to identify whether or not selected line is within current segment
             elseif line_timings[i][1] > previous_end then
                 -- add a timing within the current segment since it falls after
                 -- earlier defined segments
@@ -177,9 +171,7 @@ function filter_complex(inputs, subtitle_file, hardsub)
     table.insert(vin_filter, ("split=%d"):format(#inputs)) -- duplicate input video into several
 
     -- specify video outputs for the split filter above
-    for _, id in ipairs(input_ids) do
-        table.insert(vin_filter, ("[v%s]"):format(id))
-    end
+    for _, id in ipairs(input_ids) do table.insert(vin_filter, ("[v%s]"):format(id)) end
     table.insert(filters, table.concat(vin_filter))
 
     -- initial filter for the input audio
@@ -188,9 +180,7 @@ function filter_complex(inputs, subtitle_file, hardsub)
         ("asplit=%d"):format(#inputs) -- duplicate input audio into several
     }
     -- specify audio outputs for the split filter above
-    for _, id in ipairs(input_ids) do
-        table.insert(ain_filter, ("[a%s]"):format(id))
-    end
+    for _, id in ipairs(input_ids) do table.insert(ain_filter, ("[a%s]"):format(id)) end
     table.insert(filters, table.concat(ain_filter))
 
     -- start building out inputs list for the final concat filter
@@ -208,8 +198,7 @@ function filter_complex(inputs, subtitle_file, hardsub)
         local selects, selects_sep = '', ''
         for _, segment in ipairs(segments) do
             -- https://www.ffmpeg.org/ffmpeg-utils.html#Expression-Evaluation
-            local current_select = ('between(t,%0.3f,%0.3f)'):format(
-                                       segment[1] / 1000, segment[2] / 1000)
+            local current_select = ('between(t,%0.3f,%0.3f)'):format(segment[1] / 1000, segment[2] / 1000)
             selects = selects .. selects_sep .. current_select
             selects_sep = '+'
         end
@@ -287,16 +276,13 @@ function clipper(sub, sel, _)
     if not (clipname == 'Untitled') then clipname = split_ext(clipname) end
     clipname = find_unused_clipname(work_dir, clipname)
     -- grab final selected options from the user
-    local preset, clipname = select_clip_options(clipname)
-    local output_path = work_dir .. clipname ..
-                            ENCODE_PRESETS[preset]["extension"]
+    local preset, clipname, hardsub = select_clip_options(clipname)
+    local output_path = work_dir .. clipname .. ENCODE_PRESETS[preset]["extension"]
     local options = ENCODE_PRESETS[preset]["options"]
     if file_exists(output_path) then
         if output_path == video_path then
-            aegisub.debug.out(
-                ("The specified output file (%s) is the same as the input " ..
-                    "file, which isn't allowed. Specify a different clip " ..
-                    "name instead."):format(output_path))
+            aegisub.debug.out(("The specified output file (%s) is the same as the input file, " ..
+                                  "which isn't allowed. Specify a different clip name instead."):format(output_path))
             aegisub.cancel()
         end
         confirm_overwrite(output_path)
@@ -318,11 +304,8 @@ function clipper(sub, sel, _)
         if seek_end < segment_end then seek_end = segment_end end
     end
 
-    local encode_cmd = encode_cmd(video_path, seek_start, seek_end, options,
-                                  filter, output_path, logfile_path)
-    aegisub.debug.out(encode_cmd ..
-                          ('\n\nFor command output, please see the log file at %q\n\n'):format(
-                              logfile_path))
+    local encode_cmd = encode_cmd(video_path, seek_start, seek_end, options, filter, output_path, logfile_path)
+    aegisub.debug.out(encode_cmd .. ('\n\nFor command output, please see the log file at %q\n\n'):format(logfile_path))
     res = os.execute(encode_cmd)
 
     -- remove temporary subtitle file
@@ -404,6 +387,5 @@ function validate_clipper(sub, sel, _)
     return true
 end
 
-aegisub.register_macro(script_name, script_description, clipper,
-                       validate_clipper)
+aegisub.register_macro(script_name, script_description, clipper, validate_clipper)
 
