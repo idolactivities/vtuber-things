@@ -158,7 +158,7 @@ function build_segments(sub, sel, explicit)
     return segment_inputs
 end
 
-function filter_complex(inputs, subtitle_file)
+function filter_complex(inputs, subtitle_file, hardsub)
     local input_ids = {}
     for i = 1, #inputs do table.insert(input_ids, ("%03d"):format(i)) end
 
@@ -168,10 +168,14 @@ function filter_complex(inputs, subtitle_file)
     -- initial filter for the input video
     local vin_filter = {
         "[0:v]", -- input video
-        "format=pix_fmts=rgb32,", -- convert input video to raw before hardsubbing
-        ("ass='%s',"):format(subtitle_file), -- apply ASS subtitle filter
-        ("split=%d"):format(#inputs) -- duplicate input video into several
+        "format=pix_fmts=rgb32," -- convert input video to raw before hardsubbing
     }
+
+    -- apply ASS subtitle filter for hardsub
+    if hardsub then table.insert(vin_filter, ("ass='%s',"):format(subtitle_file)) end
+
+    table.insert(vin_filter, ("split=%d"):format(#inputs)) -- duplicate input video into several
+
     -- specify video outputs for the split filter above
     for _, id in ipairs(input_ids) do
         table.insert(vin_filter, ("[v%s]"):format(id))
@@ -301,7 +305,7 @@ function clipper(sub, sel, _)
     local logfile_path = output_path .. '_encode.log'
 
     local segment_inputs = build_segments(sub, sel, true)
-    local filter = filter_complex(segment_inputs, subs_path)
+    local filter = filter_complex(segment_inputs, subs_path, hardsub)
 
     -- identify earliest and latest points in the clip so that we can limit
     -- reading the input file to just the section we need (++execution speed)
@@ -330,43 +334,25 @@ function clipper(sub, sel, _)
     end
 end
 
+----------------------------------
+-- Clipper Configuration Dialog --
+----------------------------------
 function select_clip_options(clipname)
     local presets = {}
     for k, v in pairs(ENCODE_PRESETS) do presets[#presets + 1] = k end
     local config = {
-        {class = "label", label = "Preset", x = 0, y = 0, width = 1, height = 1},
-        {
-            class = "dropdown",
-            name = "preset",
-            items = presets,
-            value = presets[1],
-            x = 2,
-            y = 0,
-            width = 2,
-            height = 1
-        },
-        {
-            class = "label",
-            label = "Clip Name",
-            x = 0,
-            y = 1,
-            width = 1,
-            height = 1
-        }, {
-            class = "edit",
-            name = "clipname",
-            value = clipname,
-            x = 2,
-            y = 1,
-            width = 2,
-            height = 1
-        }
+        {x = 0, y = 0, width = 1, height = 1, class = "label", label = "Encoding Preset"},
+        {x = 2, y = 0, width = 2, height = 1, class = "dropdown", name = "preset", items = presets, value = presets[1]},
+        {x = 0, y = 1, width = 1, height = 1, class = "label", label = "Clip Name"},
+        {x = 2, y = 1, width = 2, height = 1, class = "edit", name = "clipname", value = clipname},
+        {x = 0, y = 2, width = 1, height = 1, class = "label", label = "Hardsub?"},
+        {x = 2, y = 2, width = 1, height = 1, class = "checkbox", name = "hardsub", value = true}
     }
     local buttons = {"OK", "Cancel"}
     local button_ids = {ok = "OK", cancel = "Cancel"}
     local button, results = aegisub.dialog.display(config, buttons, button_ids)
     if button == false then aegisub.cancel() end
-    return results["preset"], results["clipname"]
+    return results["preset"], results["clipname"], results["hardsub"]
 end
 
 function confirm_overwrite(filename)
