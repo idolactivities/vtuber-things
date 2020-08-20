@@ -152,6 +152,49 @@ function build_segments(sub, sel, explicit)
     return segment_inputs
 end
 
+function retime_subtitles(subs, segi)
+    -- tracks where we are in the final clip
+    local cursor = 0
+    local a_subs = {}
+
+    -- inserts all styles, etc into a new (fake) subtitle object, with no dialogue lines
+    for i = 1, #subs do
+        local l = subs[i]
+        if l.class ~= "dialogue" then table.insert(a_subs, l) end
+    end
+    -- step through all of our segment inputs, usually one
+    for i = 1, #segi do
+        -- step through each segment within this input in chronological order
+        for j = 1, #segi[i] do
+            local offset = segi[i][j][1]
+            local cutoff = segi[i][j][2]
+            -- steps through all subtitles to find the ones that lie in this segment
+            for i = 1, #subs do
+                local l = subs[i]
+                if l.class == "dialogue" and l.end_time >= offset and l.start_time <= cutoff then
+                    -- ensure line starts and ends within, useful for signs visible for longer than the segment
+                    if l.end_time > cutoff then l.end_time = cutoff end
+                    if l.start_time < offset then l.start_time = offset end
+                    -- adjust line from offset
+                    l.start_time = l.start_time - offset
+                    l.end_time = l.end_time - offset
+                    -- and finally, readjust to the beginning of the cursor
+                    l.start_time = l.start_time + cursor
+                    l.end_time = l.end_time + cursor
+                    -- silly thing here but this basically updates the subtitle object
+                    -- in order to get an updated 'raw' value when saving the new subtitle
+                    subs.append(l)
+                    table.insert(a_subs, subs[#subs])
+                    subs.delete(#subs)
+                end
+            end
+            -- update our location within the clip with the length of this segment
+            cursor = cursor + cutoff - offset
+        end
+    end
+    return a_subs
+end
+
 function filter_complex(inputs, subtitle_file, hardsub)
     local input_ids = {}
     for i = 1, #inputs do table.insert(input_ids, ("%03d"):format(i)) end
@@ -254,12 +297,15 @@ function save_subtitles(sub, save_path)
     subs_fh:close()
 end
 
-function clipper(sub, sel, _)
+-------------------------------
+-- Main function for clipping--
+-------------------------------
+function clipper(subs, sel, _)
     local dir_sep = package.config:sub(1, 1)
 
     -- save a copy of the current subtitles to a temporary location
     local subs_path = aegisub.decode_path('?temp/clipper.ass')
-    save_subtitles(sub, subs_path)
+    save_subtitles(subs, subs_path)
 
     -- path of video
     local video_path = aegisub.project_properties().video_file
@@ -276,7 +322,7 @@ function clipper(sub, sel, _)
     if not (clipname == 'Untitled') then clipname = split_ext(clipname) end
     clipname = find_unused_clipname(work_dir, clipname)
     -- grab final selected options from the user
-    local preset, clipname, hardsub = select_clip_options(clipname)
+    local preset, clipname, hardsub, adjustsub = select_clip_options(clipname)
     local output_path = work_dir .. clipname .. ENCODE_PRESETS[preset]["extension"]
     local options = ENCODE_PRESETS[preset]["options"]
     if file_exists(output_path) then
@@ -290,7 +336,7 @@ function clipper(sub, sel, _)
     end
     local logfile_path = output_path .. '_encode.log'
 
-    local segment_inputs = build_segments(sub, sel, true)
+    local segment_inputs = build_segments(subs, sel, true)
     local filter = filter_complex(segment_inputs, subs_path, hardsub)
 
     -- identify earliest and latest points in the clip so that we can limit
@@ -311,6 +357,13 @@ function clipper(sub, sel, _)
     -- remove temporary subtitle file
     os.remove(subs_path)
 
+    -- generate a subtitles file with timestamps adjusted to final clip
+    if adjustsub then
+        local subs_adjusted = retime_subtitles(subs, segment_inputs)
+        local adjusted_ass_path = work_dir .. clipname .. ".ass"
+        save_subtitles(subs_adjusted, adjusted_ass_path)
+    end
+
     if res == nil then
         aegisub.debug.out('ffmpeg failed to complete.')
         aegisub.cancel()
@@ -329,15 +382,20 @@ function select_clip_options(clipname)
         {x = 0, y = 1, width = 1, height = 1, class = "label", label = "Clip Name"},
         {x = 2, y = 1, width = 2, height = 1, class = "edit", name = "clipname", value = clipname},
         {x = 0, y = 2, width = 1, height = 1, class = "label", label = "Hardsub?"},
-        {x = 2, y = 2, width = 1, height = 1, class = "checkbox", name = "hardsub", value = true}
+        {x = 2, y = 2, width = 1, height = 1, class = "checkbox", name = "hardsub", value = true},
+        {x = 0, y = 3, width = 1, height = 1, class = "label", label = "Export Adjusted Subs?"},
+        {x = 2, y = 3, width = 1, height = 1, class = "checkbox", name = "adjustsub", value = false}
     }
     local buttons = {"OK", "Cancel"}
     local button_ids = {ok = "OK", cancel = "Cancel"}
     local button, results = aegisub.dialog.display(config, buttons, button_ids)
     if button == false then aegisub.cancel() end
-    return results["preset"], results["clipname"], results["hardsub"]
+    return results["preset"], results["clipname"], results["hardsub"], results["adjustsub"]
 end
 
+------------------------------
+-- Confirm Overwrite Dialog --
+------------------------------
 function confirm_overwrite(filename)
     local config = {
         {
@@ -355,6 +413,9 @@ function confirm_overwrite(filename)
     if button == false then aegisub.cancel() end
 end
 
+--------------------------------------------
+-- Identify a filename that is not in use --
+--------------------------------------------
 function find_unused_clipname(output_dir, basename)
     -- build a set of extensions that our presets may have
     local extensions = {}
