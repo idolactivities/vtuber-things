@@ -300,7 +300,27 @@ end
 -------------------------------
 -- Main function for clipping--
 -------------------------------
-function clipper(subs, sel, _)
+function macro_export_subtitle(subs, sel, _)
+    local dir_sep = package.config:sub(1, 1)
+
+    -- sets work_dir to the same folder as the script if it exists, otherwise
+    -- use the video dir (e.g. for a quick unsubbed clip)
+    local work_dir = aegisub.decode_path('?script')
+    if work_dir == '?script' then work_dir = aegisub.decode_path('?video') end
+    work_dir = work_dir .. dir_sep
+
+    local clipname = aegisub.file_name()
+    clipname = select_export_options(clipname)
+    local output_path = work_dir .. clipname
+
+    if file_exists(output_path) then confirm_overwrite(output_path) end
+
+    local segment_inputs = build_segments(subs, sel, true)
+    local subs_adjusted = retime_subtitles(subs, segment_inputs)
+    save_subtitles(subs_adjusted, output_path)
+end
+
+function macro_clipper(subs, sel, _)
     local dir_sep = package.config:sub(1, 1)
 
     -- save a copy of the current subtitles to a temporary location
@@ -393,6 +413,18 @@ function select_clip_options(clipname)
     return results["preset"], results["clipname"], results["hardsub"], results["adjustsub"]
 end
 
+function select_export_options(clipname)
+    local config = {
+        {x = 0, y = 0, width = 1, height = 1, class = "label", label = "File Name"},
+        {x = 1, y = 0, width = 24, height = 1, class = "edit", name = "clipname", value = clipname}
+    }
+    local buttons = {"OK", "Cancel"}
+    local button_ids = {ok = "OK", cancel = "Cancel"}
+    local button, results = aegisub.dialog.display(config, buttons, button_ids)
+    if button == false then aegisub.cancel() end
+    return results["clipname"]
+end
+
 ------------------------------
 -- Confirm Overwrite Dialog --
 ------------------------------
@@ -442,11 +474,12 @@ function find_unused_clipname(output_dir, basename)
     return clipname
 end
 
-function validate_clipper(sub, sel, _)
+function validate_clipper(_, _, _)
     -- fail if video is not loaded
     if aegisub.decode_path('?video') == '?video' then return false end
     return true
 end
 
-aegisub.register_macro(script_name, script_description, clipper, validate_clipper)
+aegisub.register_macro(script_name, script_description, macro_clipper, validate_clipper)
+aegisub.register_macro("Clipper (Export)", script_description, macro_export_subtitle, validate_clipper)
 
