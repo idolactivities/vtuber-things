@@ -63,18 +63,32 @@ function id_colorspace(video)
     end
 end
 
-function encode_cmd(video, ss, to, options, filter, output, logfile)
-    local command = {
-        ('%q'):format(FFMPEG), ('-ss %s -to %s -i %q -copyts'):format(ss, to, video), options,
-        ('-filter_complex %q -map "[vo]" -map "[ao]"'):format(filter),
-        ('-color_primaries %s -color_trc %s -colorspace %s'):format(id_colorspace(video)), ('%q'):format(output),
-        ('2> %q'):format(logfile)
-    }
+function build_encode_cmd(video, segment_inputs, subs_path, hardsub, options, output, logfile)
+    local command = {('%q'):format(FFMPEG)}
+
     -- add a input video read offset if our video FPS is 50+ to fix off-by-one
     -- frame errors in 60FPS videos (haven't tested on 50FPS videos though, I
     -- just picked a number close to 17)
     local frame_ms = aegisub.ms_from_frame(1) - aegisub.ms_from_frame(0)
-    if frame_ms <= 20 then table.insert(command, 2, ('-itsoffset -%0.3f'):format(frame_ms / 1000)) end
+    local itsoffset = ''
+    if frame_ms <= 20 then itsoffset = ('-itsoffset -%0.3f'):format(frame_ms / 1000) end
+
+    -- identify earliest and latest points in the clip so that we can limit
+    -- reading the input file to just the section we need (++execution speed)
+    for _, segments in ipairs(segment_inputs) do
+        local seek_start = math.floor(segments[1][1] / 1000)
+        local seek_end = math.ceil(segments[#segments][2] / 1000)
+        table.insert(command, itsoffset)
+        table.insert(command, ('-ss %s -to %s -i %q -copyts'):format(seek_start, seek_end, video))
+    end
+
+    table.insert(command, options)
+    local filter = filter_complex(segment_inputs, subs_path, hardsub)
+    table.insert(command, ('-filter_complex %q -map "[vo]" -map "[ao]"'):format(filter))
+    table.insert(command, ('-color_primaries %s -color_trc %s -colorspace %s'):format(id_colorspace(video)))
+    table.insert(command, ('%q'):format(output))
+    table.insert(command, ('2> %q'):format(logfile))
+
     return table.concat(command, ' ')
 end
 
@@ -197,34 +211,10 @@ end
 
 function filter_complex(inputs, subtitle_file, hardsub)
     local input_ids = {}
-    for i = 1, #inputs do table.insert(input_ids, ("%03d"):format(i)) end
+    for i = 1, #inputs do table.insert(input_ids, ("%03d"):format(i - 1)) end
 
     -- contains all of the filters needed to pass through filter_complex
     local filters = {}
-
-    -- initial filter for the input video
-    local vin_filter = {
-        "[0:v]", -- input video
-        "format=pix_fmts=rgb32," -- convert input video to raw before hardsubbing
-    }
-
-    -- apply ASS subtitle filter for hardsub
-    if hardsub then table.insert(vin_filter, ("ass='%s',"):format(subtitle_file)) end
-
-    table.insert(vin_filter, ("split=%d"):format(#inputs)) -- duplicate input video into several
-
-    -- specify video outputs for the split filter above
-    for _, id in ipairs(input_ids) do table.insert(vin_filter, ("[v%s]"):format(id)) end
-    table.insert(filters, table.concat(vin_filter))
-
-    -- initial filter for the input audio
-    local ain_filter = {
-        "[0:a]", -- input audio
-        ("asplit=%d"):format(#inputs) -- duplicate input audio into several
-    }
-    -- specify audio outputs for the split filter above
-    for _, id in ipairs(input_ids) do table.insert(ain_filter, ("[a%s]"):format(id)) end
-    table.insert(filters, table.concat(ain_filter))
 
     -- start building out inputs list for the final concat filter
     local trimmed_vins, trimmed_ains = '', ''
@@ -232,10 +222,6 @@ function filter_complex(inputs, subtitle_file, hardsub)
     for i = 1, #inputs do
         local id = input_ids[i]
         local segments = inputs[i]
-
-        -- specify inputs for the concat filter to apply at the end
-        trimmed_vins = trimmed_vins .. ("[v%st]"):format(id)
-        trimmed_ains = trimmed_ains .. ("[a%st]"):format(id)
 
         -- build expression to pass to the select/aselect filters
         local selects, selects_sep = '', ''
@@ -246,22 +232,30 @@ function filter_complex(inputs, subtitle_file, hardsub)
             selects_sep = '+'
         end
 
+        -- specify inputs for the concat filter to apply at the end
+        trimmed_vins = trimmed_vins .. ("[v%st]"):format(id)
+        trimmed_ains = trimmed_ains .. ("[a%st]"):format(id)
+
         -- https://ffmpeg.org/ffmpeg-filters.html#select_002c-aselect
-        local vsel_filter = {
-            ("[v%s]"):format(id), -- video segment id
+
+        local v_filter = {
+            ("[%s:v]"):format(i - 1), -- input video
+            "format=pix_fmts=rgb32,", -- convert input video to raw before hardsubbing
             ("select='%s',"):format(selects), -- the filter that trims the input
             "setpts=N/FRAME_RATE/TB", -- constructs correct timestamps for output
             ("[v%st]"):format(id) -- trimmed video output for current segment to concat later
         }
-        table.insert(filters, table.concat(vsel_filter))
+        -- apply ASS subtitle filter for hardsub
+        if hardsub then table.insert(v_filter, 3, ("ass='%s',"):format(subtitle_file)) end
+        table.insert(filters, table.concat(v_filter))
 
-        local asel_filter = {
-            ("[a%s]"):format(id), -- audio segment id
+        local a_filter = {
+            ("[%s:a]"):format(i - 1), -- input audio
             ("aselect='%s',"):format(selects), -- the filter that trims the input
             "asetpts=N/SR/TB", -- constructs correct timestamps for output
             ("[a%st]"):format(id) -- trimmed audio output for current segment to concat later
         }
-        table.insert(filters, table.concat(asel_filter))
+        table.insert(filters, table.concat(a_filter))
     end
 
     vconcat_filter = {
@@ -357,20 +351,9 @@ function macro_clipper(subs, sel, _)
     local logfile_path = output_path .. '_encode.log'
 
     local segment_inputs = build_segments(subs, sel, true)
-    local filter = filter_complex(segment_inputs, subs_path, hardsub)
 
-    -- identify earliest and latest points in the clip so that we can limit
-    -- reading the input file to just the section we need (++execution speed)
-    local seek_start = math.floor(segment_inputs[1][1][1] / 1000)
-    local seek_end = seek_start
-    for _, segments in ipairs(segment_inputs) do
-        local segment_start = math.floor(segments[1][1] / 1000)
-        local segment_end = math.ceil(segments[#segments][2] / 1000)
-        if seek_start > segment_start then seek_start = segment_start end
-        if seek_end < segment_end then seek_end = segment_end end
-    end
-
-    local encode_cmd = encode_cmd(video_path, seek_start, seek_end, options, filter, output_path, logfile_path)
+    local encode_cmd = build_encode_cmd(video_path, segment_inputs, subs_path, hardsub, options, output_path,
+                                        logfile_path)
     aegisub.debug.out(encode_cmd .. ('\n\nFor command output, please see the log file at %q\n\n'):format(logfile_path))
     res = os.execute(encode_cmd)
 
