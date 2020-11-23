@@ -126,13 +126,13 @@ function build_segments(sub, sel, explicit)
             if line_timings[i][1] >= previous_end and line_timings[i][1] - previous_end <= frame_duration then
                 -- merge lines if they're right after one another
                 segments[#segments][2] = line_timings[i][2]
-            elseif line_timings[i][1] > previous_end then
+            elseif line_timings[i][1] > previous_end and line_timings[i][1] - previous_end <= 60000 then
                 -- add a timing within the current segment since it falls after
-                -- earlier defined segments
+                -- earlier defined segments, but within a minute of the next
                 table.insert(segments, {line_timings[i][1], line_timings[i][2]})
             else
-                -- if a line goes backwards, save the current segment input and
-                -- initialize a new list of segments
+                -- if a line goes backwards, or is a minute away, save the
+                -- current segment input and initialize a new list of segments
                 table.insert(segment_inputs, segments)
                 segments = {{line_timings[i][1], line_timings[i][2]}}
             end
