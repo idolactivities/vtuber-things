@@ -92,25 +92,11 @@ function build_encode_cmd(video, segment_inputs, subs_path, hardsub, options, ou
     return table.concat(command, ' ')
 end
 
-function build_segments(sub, sel, explicit)
-    -- default to true if unspecified, for explicitly defined segments
-    local explicit = explicit == nil and true or explicit
-
+function build_segments(sub, sel)
     local line_timings = {}
-    if explicit then
-        for _, si in ipairs(sel) do
-            line = sub[si]
-            if line.end_time > line.start_time then
-                table.insert(line_timings, {line.start_time, line.end_time})
-            end
-        end
-    else
-        for _, si in ipairs(sel) do
-            line = sub[si]
-            if not line.comment and line.end_time > line.start_time then
-                table.insert(line_timings, {line.start_time, line.end_time})
-            end
-        end
+    for _, si in ipairs(sel) do
+        line = sub[si]
+        if line.end_time > line.start_time then table.insert(line_timings, {line.start_time, line.end_time}) end
     end
 
     -- used for merging segments right after one another
@@ -120,48 +106,24 @@ function build_segments(sub, sel, explicit)
     -- list of timings for each segment input with the first line timing
     local segment_inputs = {}
     local segments = {{line_timings[1][1], line_timings[1][2]}}
-    if explicit then
-        for i = 2, #line_timings do
-            local previous_end = segments[#segments][2]
-            if line_timings[i][1] >= previous_end and line_timings[i][1] - previous_end <= frame_duration then
-                -- merge lines if they're right after one another
-                segments[#segments][2] = line_timings[i][2]
-            elseif line_timings[i][1] > previous_end and line_timings[i][1] - previous_end <= 60000 then
-                -- add a timing within the current segment since it falls after
-                -- earlier defined segments, but within a minute of the next
-                table.insert(segments, {line_timings[i][1], line_timings[i][2]})
-            else
-                -- if a line goes backwards, or is a minute away, save the
-                -- current segment input and initialize a new list of segments
-                table.insert(segment_inputs, segments)
-                segments = {{line_timings[i][1], line_timings[i][2]}}
-            end
+    for i = 2, #line_timings do
+        local previous_end = segments[#segments][2]
+        if line_timings[i][1] >= previous_end and line_timings[i][1] - previous_end <= frame_duration then
+            -- merge lines if they're right after one another
+            segments[#segments][2] = line_timings[i][2]
+        elseif line_timings[i][1] > previous_end and line_timings[i][1] - previous_end <= 60000 then
+            -- add a timing within the current segment since it falls after
+            -- earlier defined segments, but within a minute of the next
+            table.insert(segments, {line_timings[i][1], line_timings[i][2]})
+        else
+            -- if a line goes backwards, or is a minute away, save the
+            -- current segment input and initialize a new list of segments
+            table.insert(segment_inputs, segments)
+            segments = {{line_timings[i][1], line_timings[i][2]}}
         end
-        -- save our last segment input once all line timings have been read
-        table.insert(segment_inputs, segments)
-    else
-        for i = 2, #line_timings do
-            local previous_end = segments[#segments][2]
-            if line_timings[i][1] >= previous_end and line_timings[i][1] - previous_end <= 500 then
-                -- merge lines with less than 500ms gap
-                segments[#segments][2] = line_timings[i][2]
-                -- elseif tlines[i][2] <= previous_end then
-                -- skip since the line overlaps with an earlier line
-                -- need to identify whether or not selected line is within current segment
-            elseif line_timings[i][1] > previous_end then
-                -- add a timing within the current segment since it falls after
-                -- earlier defined segments
-                table.insert(segments, {line_timings[i][1], line_timings[i][2]})
-            else
-                -- if a line goes backwards, save the current segment input and
-                -- initialize a new list of segments
-                table.insert(segment_inputs, segments)
-                segments = {{line_timings[i][1], line_timings[i][2]}}
-            end
-        end
-        -- save our last segment input once all line timings have been read
-        table.insert(segment_inputs, segments)
     end
+    -- save our last segment input once all line timings have been read
+    table.insert(segment_inputs, segments)
 
     return segment_inputs
 end
@@ -309,7 +271,7 @@ function macro_export_subtitle(subs, sel, _)
 
     if file_exists(output_path) then confirm_overwrite(output_path) end
 
-    local segment_inputs = build_segments(subs, sel, true)
+    local segment_inputs = build_segments(subs, sel)
     local subs_adjusted = retime_subtitles(subs, segment_inputs)
     save_subtitles(subs_adjusted, output_path)
 end
@@ -350,7 +312,7 @@ function macro_clipper(subs, sel, _)
     end
     local logfile_path = output_path .. '_encode.log'
 
-    local segment_inputs = build_segments(subs, sel, true)
+    local segment_inputs = build_segments(subs, sel)
 
     local encode_cmd = build_encode_cmd(video_path, segment_inputs, subs_path, hardsub, options, output_path,
                                         logfile_path)
