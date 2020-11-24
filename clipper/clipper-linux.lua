@@ -86,7 +86,7 @@ function build_encode_cmd(video, inputs, xfades, subs_path, hardsub, options, ou
     end
 
     table.insert(command, options)
-    local filter = filter_complex(inputs, subs_path, hardsub, xfades)
+    local filter = filter_complex(video, inputs, subs_path, hardsub, xfades)
     table.insert(command, ('-filter_complex %q -map "[vo]" -map "[ao]"'):format(filter))
     table.insert(command, ('-color_primaries %s -color_trc %s -colorspace %s'):format(id_colorspace(video)))
     table.insert(command, ('%q'):format(output))
@@ -204,7 +204,7 @@ function retime_subtitles(subs, segi)
     return a_subs
 end
 
-function filter_complex(inputs, subtitle_file, hardsub, xfades)
+function filter_complex(video, inputs, subtitle_file, hardsub, xfades)
     local input_ids = {}
     for i = 1, #inputs do table.insert(input_ids, ("%03d"):format(i - 1)) end
 
@@ -281,14 +281,10 @@ function filter_complex(inputs, subtitle_file, hardsub, xfades)
 
         local v_filter = {
             ("[%s:v]"):format(i - 1), -- input video
-            "format=pix_fmts=rgb32,", -- convert input video to raw before hardsubbing
             ("select='%s',"):format(selects), -- the filter that trims the input
-            "setpts=N/FRAME_RATE/TB,", -- constructs correct timestamps for output
-            "format=pix_fmts=yuv420p", -- convert video back to 4:2:0
+            "setpts=N/FRAME_RATE/TB", -- constructs correct timestamps for output
             ("[v%st]"):format(id) -- trimmed video output for current segment to concat later
         }
-        -- apply ASS subtitle filter for hardsub
-        if hardsub then table.insert(v_filter, 3, ("ass='%s',"):format(subtitle_file)) end
         table.insert(filters, table.concat(v_filter))
 
         local a_filter = {
@@ -325,9 +321,19 @@ function filter_complex(inputs, subtitle_file, hardsub, xfades)
 
     vfinal_filter = {
         ("%s"):format(vpipe), -- the concatenated source
+        -- the following fix is temporary until ffmpeg upstream is fixed in a release
+        -- https://patchwork.ffmpeg.org/project/ffmpeg/patch/20201123195200.886591-1-lae@lae.is/
+        ('setparams=color_primaries=%s:color_trc=%s:colorspace=%s,'):format(id_colorspace(video)), -- params fix for xfade
         "format=pix_fmts=yuv420p", -- convert video back to an appropriate pixel format
         "[vo]" -- the final video output
     }
+    if hardsub then
+        hardsub_filter = {
+            "format=pix_fmts=rgb32,", -- convert input video to raw before hardsubbing
+            ("ass='%s',"):format(subtitle_file) -- apply ASS subtitle filter for hardsub
+        }
+        table.insert(vfinal_filter, 3, table.concat(hardsub_filter))
+    end
     table.insert(filters, table.concat(vfinal_filter))
 
     aconcat_filter = {
@@ -381,10 +387,6 @@ end
 function macro_clipper(subs, sel, _)
     local dir_sep = package.config:sub(1, 1)
 
-    -- save a copy of the current subtitles to a temporary location
-    local subs_path = aegisub.decode_path('?temp/clipper.ass')
-    save_subtitles(subs, subs_path)
-
     -- path of video
     local video_path = aegisub.project_properties().video_file
 
@@ -415,6 +417,11 @@ function macro_clipper(subs, sel, _)
     local logfile_path = output_path .. '_encode.log'
 
     local segment_inputs, segment_xfades = build_segments(subs, sel)
+
+    -- save a copy of the current subtitles to a temporary location
+    local subs_path = aegisub.decode_path('?temp/clipper.ass')
+    local subs_adjusted = retime_subtitles(subs, segment_inputs)
+    save_subtitles(subs_adjusted, subs_path)
 
     local encode_cmd = build_encode_cmd(video_path, segment_inputs, segment_xfades, subs_path, hardsub, options,
                                         output_path, logfile_path)
