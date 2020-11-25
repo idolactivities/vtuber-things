@@ -5,6 +5,8 @@ script_name = "Clipper"
 script_description = "Encode a video clip by reading start and end times from the selected lines."
 script_version = "1.2.0-dev"
 
+local util = require("clipper.util")
+
 FFMPEG = "ffmpeg"
 FFPROBE = "ffprobe"
 ENCODE_PRESETS = {
@@ -26,24 +28,6 @@ ENCODE_PRESETS = {
     }
 }
 DIR_SEP = package.config:sub(1, 1)
-
---- Check if a file exists and is readable
--- Use this for verifying necessary files exist or in overwrite checks
--- @param path string: path to the file
--- @return bool: true if file exists, false if not
-function file_exists(path)
-    local f = io.open(path, "r")
-    if f ~= nil then
-        io.close(f)
-        return true
-    end
-    return false
-end
-
---- Splits a filename into its name and extension
--- @param fname string: the filename
--- @return table: the separated filename and extension in 2 elements
-function split_ext(fname) return string.match(fname, "(.-)%.([^%.]+)$") end
 
 --- Identify the colorspace of a video
 -- Uses ffprobe to detect the colorspace of a video. Depending on the
@@ -390,7 +374,7 @@ function macro_export_subtitle(subs, sel, _)
     clipname = select_export_options(clipname)
     local output_path = work_dir .. clipname
 
-    if file_exists(output_path) then confirm_overwrite(output_path) end
+    if util.file_exists(output_path) then util.confirm_overwrite(output_path) end
 
     local segment_inputs, _ = build_segments(subs, sel)
     local subs_adjusted = retime_subtitles(subs, segment_inputs)
@@ -410,19 +394,19 @@ function macro_clipper(subs, sel, _)
     -- default the clipname to either the script's filename or "Untitled" with
     -- a suffix that doesn't conflict with any existing files
     local clipname = aegisub.file_name()
-    if not (clipname == 'Untitled') then clipname = split_ext(clipname) end
+    if not (clipname == 'Untitled') then clipname = util.split_ext(clipname) end
     clipname = find_unused_clipname(work_dir, clipname)
     -- grab final selected options from the user
     local preset, clipname, hardsub, adjustsub = select_clip_options(clipname)
     local output_path = work_dir .. clipname .. ENCODE_PRESETS[preset]["extension"]
     local options = ENCODE_PRESETS[preset]["options"]
-    if file_exists(output_path) then
+    if util.file_exists(output_path) then
         if output_path == video_path then
             aegisub.debug.out(("The specified output file (%s) is the same as the input file, " ..
                                   "which isn't allowed. Specify a different clip name instead."):format(output_path))
             aegisub.cancel()
         end
-        confirm_overwrite(output_path)
+        util.confirm_overwrite(output_path)
         options = options .. ' -y'
     end
     local logfile_path = output_path .. '_encode.log'
@@ -490,26 +474,6 @@ function select_export_options(clipname)
     return results["clipname"]
 end
 
-------------------------------
--- Confirm Overwrite Dialog --
-------------------------------
-function confirm_overwrite(filename)
-    local config = {
-        {
-            class = "label",
-            label = ("Are you sure you want to overwrite %s?"):format(filename),
-            x = 0,
-            y = 0,
-            width = 4,
-            height = 2
-        }
-    }
-    local buttons = {"Yes", "Cancel"}
-    local button_ids = {ok = "Yes", cancel = "Cancel"}
-    local button, _ = aegisub.dialog.display(config, buttons, button_ids)
-    if button == false then aegisub.cancel() end
-end
-
 --------------------------------------------
 -- Identify a filename that is not in use --
 --------------------------------------------
@@ -525,7 +489,7 @@ function find_unused_clipname(output_dir, basename)
     while (true) do
         local exists = false
         for ext, _ in pairs(extensions) do
-            exists = file_exists(output_dir .. clipname .. ext)
+            exists = util.file_exists(output_dir .. clipname .. ext)
             if exists then break end
         end
         if exists then
