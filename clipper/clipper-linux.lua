@@ -25,9 +25,14 @@ ENCODE_PRESETS = {
         extension = ".webm"
     }
 }
+DIR_SEP = package.config:sub(1, 1)
 
-function file_exists(name)
-    local f = io.open(name, "r")
+--- Check if a file exists and is readable
+-- Use this for verifying necessary files exist or in overwrite checks
+-- @param path string: path to the file
+-- @return bool: true if file exists, false if not
+function file_exists(path)
+    local f = io.open(path, "r")
     if f ~= nil then
         io.close(f)
         return true
@@ -35,8 +40,18 @@ function file_exists(name)
     return false
 end
 
+--- Splits a filename into its name and extension
+-- @param fname string: the filename
+-- @return table: the separated filename and extension in 2 elements
 function split_ext(fname) return string.match(fname, "(.-)%.([^%.]+)$") end
 
+--- Identify the colorspace of a video
+-- Uses ffprobe to detect the colorspace of a video. Depending on the
+-- colorspace, identify appropriate values for -colorspace, -color_trc, and
+-- -color_primaries to pass to ffmpeg during the encoding step to ensure that
+-- the video and associated subtitles are encoded in the correct colors.
+-- @param video string: path to the source video file
+-- @return string, string, string: values to pass to ffmpeg flags
 function id_colorspace(video)
     local values = {}
 
@@ -365,13 +380,11 @@ end
 -- Main function for clipping--
 -------------------------------
 function macro_export_subtitle(subs, sel, _)
-    local dir_sep = package.config:sub(1, 1)
-
     -- sets work_dir to the same folder as the script if it exists, otherwise
     -- use the video dir (e.g. for a quick unsubbed clip)
     local work_dir = aegisub.decode_path('?script')
     if work_dir == '?script' then work_dir = aegisub.decode_path('?video') end
-    work_dir = work_dir .. dir_sep
+    work_dir = work_dir .. DIR_SEP
 
     local clipname = aegisub.file_name()
     clipname = select_export_options(clipname)
@@ -385,8 +398,6 @@ function macro_export_subtitle(subs, sel, _)
 end
 
 function macro_clipper(subs, sel, _)
-    local dir_sep = package.config:sub(1, 1)
-
     -- path of video
     local video_path = aegisub.project_properties().video_file
 
@@ -394,7 +405,7 @@ function macro_clipper(subs, sel, _)
     -- use the video dir (e.g. for a quick unsubbed clip)
     local work_dir = aegisub.decode_path('?script')
     if work_dir == '?script' then work_dir = aegisub.decode_path('?video') end
-    work_dir = work_dir .. dir_sep
+    work_dir = work_dir .. DIR_SEP
 
     -- default the clipname to either the script's filename or "Untitled" with
     -- a suffix that doesn't conflict with any existing files
