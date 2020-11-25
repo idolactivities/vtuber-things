@@ -3,7 +3,7 @@ Creates a hardsubbed video clip from selected lines.
 ]] --
 script_name = "Clipper"
 script_description = "Encode a video clip by reading start and end times from the selected lines."
-script_version = "1.1.0"
+script_version = "1.2.0-dev"
 
 FFMPEG = "ffmpeg"
 FFPROBE = "ffprobe"
