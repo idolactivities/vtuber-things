@@ -63,7 +63,7 @@ function id_colorspace(video)
     end
 end
 
-function build_encode_cmd(video, segment_inputs, subs_path, hardsub, options, output, logfile)
+function build_encode_cmd(video, inputs, xfades, subs_path, hardsub, options, output, logfile)
     local command = {('%q'):format(FFMPEG)}
 
     -- add a input video read offset if our video FPS is 50+ to fix off-by-one
@@ -75,15 +75,18 @@ function build_encode_cmd(video, segment_inputs, subs_path, hardsub, options, ou
 
     -- identify earliest and latest points in the clip so that we can limit
     -- reading the input file to just the section we need (++execution speed)
-    for _, segments in ipairs(segment_inputs) do
+    for i, segments in ipairs(inputs) do
         local seek_start = math.floor(segments[1][1] / 1000)
         local seek_end = math.ceil(segments[#segments][2] / 1000)
+        -- add some more seek padding for fades
+        if i > 1 then seek_start = seek_start - math.ceil(xfades[i - 1][1]) end
+        if i < #inputs then seek_end = seek_end + math.ceil(xfades[i][1]) end
         table.insert(command, itsoffset)
         table.insert(command, ('-ss %s -to %s -i %q -copyts'):format(seek_start, seek_end, video))
     end
 
     table.insert(command, options)
-    local filter = filter_complex(segment_inputs, subs_path, hardsub)
+    local filter = filter_complex(video, inputs, subs_path, hardsub, xfades)
     table.insert(command, ('-filter_complex %q -map "[vo]" -map "[ao]"'):format(filter))
     table.insert(command, ('-color_primaries %s -color_trc %s -colorspace %s'):format(id_colorspace(video)))
     table.insert(command, ('%q'):format(output))
@@ -96,7 +99,12 @@ function build_segments(sub, sel)
     local line_timings = {}
     for _, si in ipairs(sel) do
         line = sub[si]
-        if line.end_time > line.start_time then table.insert(line_timings, {line.start_time, line.end_time}) end
+        if line.end_time > line.start_time then
+            table.insert(line_timings, {line.start_time, line.end_time})
+            -- if we're inserting a xfade, we want to create a new segment, so
+            -- put the xfade definition in index 3
+            if line.effect:sub(1, 5) == "xfade" then table.insert(line_timings[#line_timings], line.effect) end
+        end
     end
 
     -- used for merging segments right after one another
@@ -105,27 +113,52 @@ function build_segments(sub, sel)
     -- initialize a list of segment inputs to feed to ffmpeg as inputs, and a
     -- list of timings for each segment input with the first line timing
     local segment_inputs = {}
-    local segments = {{line_timings[1][1], line_timings[1][2]}}
-    for i = 2, #line_timings do
-        local previous_end = segments[#segments][2]
-        if line_timings[i][1] >= previous_end and line_timings[i][1] - previous_end <= frame_duration then
-            -- merge lines if they're right after one another
-            segments[#segments][2] = line_timings[i][2]
-        elseif line_timings[i][1] > previous_end and line_timings[i][1] - previous_end <= 60000 then
-            -- add a timing within the current segment since it falls after
-            -- earlier defined segments, but within a minute of the next
-            table.insert(segments, {line_timings[i][1], line_timings[i][2]})
-        else
-            -- if a line goes backwards, or is a minute away, save the
-            -- current segment input and initialize a new list of segments
-            table.insert(segment_inputs, segments)
+    local segment_xfades = {}
+    local segments = {}
+    for i = 1, #line_timings do
+        if #segments == 0 then
             segments = {{line_timings[i][1], line_timings[i][2]}}
+        else
+            local previous_end = segments[#segments][2]
+            if line_timings[i][1] >= previous_end and line_timings[i][1] - previous_end <= frame_duration then
+                -- merge lines if they're right after one another
+                segments[#segments][2] = line_timings[i][2]
+            elseif line_timings[i][1] > previous_end and line_timings[i][1] - previous_end <= 60000 then
+                -- add a timing within the current segment since it falls after
+                -- earlier defined segments, but within a minute of the next
+                table.insert(segments, {line_timings[i][1], line_timings[i][2]})
+            else
+                -- if a line goes backwards, or is a minute away, save the
+                -- current segment input and initialize a new list of segments
+                table.insert(segment_inputs, segments)
+                -- associate no xfade with this segment's end
+                table.insert(segment_xfades, {0, "none"})
+                segments = {{line_timings[i][1], line_timings[i][2]}}
+            end
+        end
+
+        if i == #line_timings then
+            -- save our last segment input once all line timings have been read
+            table.insert(segment_inputs, segments)
+            -- last segment can't have an xfade, so associate none
+            table.insert(segment_xfades, {0, "none"})
+        elseif line_timings[i][3] then
+            -- here we close off the segment if the user has specified a fade
+            -- that we detected earlier in this function.
+            table.insert(segment_inputs, segments)
+            segments = {}
+            local _, _, duration, transition = string.find(line_timings[i][3], "xfade (%d*%.?%d+) (%a+)")
+            if duration then
+                table.insert(segment_xfades, {tonumber(duration), transition})
+            else
+                aegisub.debug.out("One of your xfade commands was unable to be parsed correctly.\n" ..
+                                      "Please either correct or remove it and try again.");
+                aegisub.cancel()
+            end
         end
     end
-    -- save our last segment input once all line timings have been read
-    table.insert(segment_inputs, segments)
 
-    return segment_inputs
+    return segment_inputs, segment_xfades
 end
 
 function retime_subtitles(subs, segi)
@@ -171,62 +204,137 @@ function retime_subtitles(subs, segi)
     return a_subs
 end
 
-function filter_complex(inputs, subtitle_file, hardsub)
+function filter_complex(video, inputs, subtitle_file, hardsub, xfades)
     local input_ids = {}
     for i = 1, #inputs do table.insert(input_ids, ("%03d"):format(i - 1)) end
 
     -- contains all of the filters needed to pass through filter_complex
     local filters = {}
 
+    -- identify each segment's duration. used for bounds checking on xfades
+    local segment_durations = {}
+    for _, segments in ipairs(inputs) do
+        local duration = 0
+        for _, segment in ipairs(segments) do duration = duration + (segment[2] - segment[1]) end
+        table.insert(segment_durations, duration)
+    end
+
+    local xfade_values = {}
+    for i, segments in ipairs(inputs) do
+        local xfade_pad_start, xfade_pad_finish, xfade_duration = 0, 0, 0
+        if i > 1 and xfades[i - 1][1] > 0 then
+            local xfade_pad_prev = math.floor(xfades[i - 1][1] / 2 * 1000)
+            local shorter_segment = segment_durations[i - 1]
+            if segment_durations[i] < shorter_segment then shorter_segment = segment_durations[i] end
+            if xfade_pad_prev > shorter_segment / 2 then
+                xfade_pad_start = shorter_segment / 2
+            else
+                xfade_pad_start = xfade_pad_prev
+            end
+        end
+        if i < #inputs and xfades[i][1] > 0 then
+            local xfade_pad = math.floor(xfades[i][1] / 2 * 1000)
+            local shorter_segment = segment_durations[i + 1]
+            if segment_durations[i] < shorter_segment then shorter_segment = segment_durations[i] end
+            if xfade_pad > shorter_segment / 2 then
+                xfade_pad_finish = shorter_segment / 2
+            else
+                xfade_pad_finish = xfade_pad
+                xfade_duration = xfade_pad * 2
+            end
+        end
+        table.insert(xfade_values, {xfade_duration, xfades[i][2], xfade_pad_start, xfade_pad_finish})
+    end
+
+    local xfade_debug = {"Specified xfade configurations:\n"}
+    for _, h in ipairs(xfade_values) do table.insert(xfade_debug, ("%s\n"):format(table.concat(h, ";"))) end
+    aegisub.debug.out(("%s\n"):format(table.concat(xfade_debug)))
+
     -- start building out inputs list for the final concat filter
-    local trimmed_vins, trimmed_ains = '', ''
+    local trimmed_ains = ''
     -- create a/v filters for trimming segments
     for i = 1, #inputs do
         local id = input_ids[i]
         local segments = inputs[i]
 
         -- build expression to pass to the select/aselect filters
-        local selects, selects_sep = '', ''
-        for _, segment in ipairs(segments) do
+        local selects, aselects, selects_sep = '', '', ''
+        for j, segment in ipairs(segments) do
+            local start, finish = segment[1], segment[2]
             -- https://www.ffmpeg.org/ffmpeg-utils.html#Expression-Evaluation
-            local current_select = ('between(t,%0.3f,%0.3f)'):format(segment[1] / 1000, segment[2] / 1000)
+            local current_select = ('between(t,%0.3f,%0.3f)'):format(start / 1000, finish / 1000)
+            aselects = aselects .. selects_sep .. current_select
+
+            -- pad video select values for xfades only
+            if j == 1 then start = start - xfade_values[i][3] end
+            if j == #segments then finish = finish + xfade_values[i][4] end
+            current_select = ('between(t,%0.3f,%0.3f)'):format(start / 1000, finish / 1000)
             selects = selects .. selects_sep .. current_select
+
             selects_sep = '+'
         end
 
         -- specify inputs for the concat filter to apply at the end
-        trimmed_vins = trimmed_vins .. ("[v%st]"):format(id)
         trimmed_ains = trimmed_ains .. ("[a%st]"):format(id)
 
         -- https://ffmpeg.org/ffmpeg-filters.html#select_002c-aselect
 
         local v_filter = {
             ("[%s:v]"):format(i - 1), -- input video
-            "format=pix_fmts=rgb32,", -- convert input video to raw before hardsubbing
             ("select='%s',"):format(selects), -- the filter that trims the input
             "setpts=N/FRAME_RATE/TB", -- constructs correct timestamps for output
             ("[v%st]"):format(id) -- trimmed video output for current segment to concat later
         }
-        -- apply ASS subtitle filter for hardsub
-        if hardsub then table.insert(v_filter, 3, ("ass='%s',"):format(subtitle_file)) end
         table.insert(filters, table.concat(v_filter))
 
         local a_filter = {
             ("[%s:a]"):format(i - 1), -- input audio
-            ("aselect='%s',"):format(selects), -- the filter that trims the input
+            ("aselect='%s',"):format(aselects), -- the filter that trims the input
             "asetpts=N/SR/TB", -- constructs correct timestamps for output
             ("[a%st]"):format(id) -- trimmed audio output for current segment to concat later
         }
         table.insert(filters, table.concat(a_filter))
     end
 
-    vconcat_filter = {
-        trimmed_vins, -- list of trimmed inputs built earlier
-        ("concat=n=%d:v=1:a=0,"):format(#inputs), -- concat the video inputs
+    local vpipe = ("[v%st]"):format(input_ids[1])
+    for i = 1, #inputs - 1 do
+        local next_id = input_ids[i + 1]
+        local xfade = xfade_values[i]
+        local filter = {}
+        if xfade[2] == "none" then
+            filter = {
+                ("%s[v%st]"):format(vpipe, next_id), -- the two sources to merge
+                "concat=n=2:v=1:a=0", -- concat the video inputs
+                ("[v%sx]"):format(next_id) -- the next video output
+            }
+        else
+            filter = {
+                ("%s[v%st]"):format(vpipe, next_id), -- the two sources to merge
+                ("xfade=transition=%s:duration=%s:offset=%s"):format(xfade[2], xfade[1] / 1000,
+                                                                     (segment_durations[i] - xfade[1] / 2) / 1000), -- xfade the video inputs
+                ("[v%sx]"):format(next_id) -- the next video output
+            }
+        end
+        vpipe = ("[v%sx]"):format(next_id)
+        table.insert(filters, table.concat(filter))
+    end
+
+    vfinal_filter = {
+        ("%s"):format(vpipe), -- the concatenated source
+        -- the following fix is temporary until ffmpeg upstream is fixed in a release
+        -- https://patchwork.ffmpeg.org/project/ffmpeg/patch/20201123195200.886591-1-lae@lae.is/
+        ('setparams=color_primaries=%s:color_trc=%s:colorspace=%s,'):format(id_colorspace(video)), -- params fix for xfade
         "format=pix_fmts=yuv420p", -- convert video back to an appropriate pixel format
         "[vo]" -- the final video output
     }
-    table.insert(filters, table.concat(vconcat_filter))
+    if hardsub then
+        hardsub_filter = {
+            "format=pix_fmts=rgb32,", -- convert input video to raw before hardsubbing
+            ("ass='%s',"):format(subtitle_file) -- apply ASS subtitle filter for hardsub
+        }
+        table.insert(vfinal_filter, 3, table.concat(hardsub_filter))
+    end
+    table.insert(filters, table.concat(vfinal_filter))
 
     aconcat_filter = {
         trimmed_ains, -- list of trimmed inputs built earlier
@@ -271,17 +379,13 @@ function macro_export_subtitle(subs, sel, _)
 
     if file_exists(output_path) then confirm_overwrite(output_path) end
 
-    local segment_inputs = build_segments(subs, sel)
+    local segment_inputs, _ = build_segments(subs, sel)
     local subs_adjusted = retime_subtitles(subs, segment_inputs)
     save_subtitles(subs_adjusted, output_path)
 end
 
 function macro_clipper(subs, sel, _)
     local dir_sep = package.config:sub(1, 1)
-
-    -- save a copy of the current subtitles to a temporary location
-    local subs_path = aegisub.decode_path('?temp/clipper.ass')
-    save_subtitles(subs, subs_path)
 
     -- path of video
     local video_path = aegisub.project_properties().video_file
@@ -312,10 +416,15 @@ function macro_clipper(subs, sel, _)
     end
     local logfile_path = output_path .. '_encode.log'
 
-    local segment_inputs = build_segments(subs, sel)
+    local segment_inputs, segment_xfades = build_segments(subs, sel)
 
-    local encode_cmd = build_encode_cmd(video_path, segment_inputs, subs_path, hardsub, options, output_path,
-                                        logfile_path)
+    -- save a copy of the current subtitles to a temporary location
+    local subs_path = aegisub.decode_path('?temp/clipper.ass')
+    local subs_adjusted = retime_subtitles(subs, segment_inputs)
+    save_subtitles(subs_adjusted, subs_path)
+
+    local encode_cmd = build_encode_cmd(video_path, segment_inputs, segment_xfades, subs_path, hardsub, options,
+                                        output_path, logfile_path)
     aegisub.debug.out(encode_cmd .. ('\n\nFor command output, please see the log file at %q\n\n'):format(logfile_path))
     res = os.execute(encode_cmd)
 
