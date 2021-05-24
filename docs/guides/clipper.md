@@ -134,14 +134,16 @@ If you're having issues with Clipper, check the following:
 
 1. Are you using a recent version of Aegisub? See [Requirements](#requirements).
 2. Does your directory structure match what was shown in [Installation](#installation)?
-3. Have you saved your subtitles file recently? Clipper requires a saved subtitles file,
-and unsaved changes will not show up in the output video.
-4. Are there non-English characters or accented characters in any of your file names
-or folder names? Try renaming your files and folders to only use English characters.
+3. Have you saved your subtitles file recently? Clipper requires a saved
+   subtitles file, and unsaved changes will not show up in the output video.
+4. Are there non-English characters or accented characters in any of your file
+   names or folder names (both for the video you're working on and the subtitle
+   file you're working on)? Try renaming your files and folders to only use
+   English (ASCII) characters.
 
    Alternatively, you can try opening your system's Language Settings, select
-   "Administrative language settings", click on "Change system locale", and check the
-   box for UTF-8 support.
+   "Administrative language settings", click on "Change system locale", and
+   check the box for UTF-8 support.
 
    ![Change system locale]({{ '/assets/img/guides_clipper_locale_settings.png' | relative_url }})
  5. If you're still having issues, please report the problem by
