@@ -3,7 +3,7 @@
 # Stream Etiquette
 
 If you're watching a VTuber stream in Japanese or another language
-you don't understand, here's some things to keep in mind.
+you don't understand, here are some things to keep in mind.
 
 ## The Short Version
 
@@ -25,6 +25,15 @@ you don't understand, here's some things to keep in mind.
 
 **The short version is all you need, as long as you actually follow it.**
 But there are some points that could benefit from more detail or clarification:
+
+> ### Aside: "Real Identities"
+> I'll be blunt: yes, VTubers are real people playing characters. I understand
+> that this tends to make people curious, but if the VTuber does not publicly reveal
+> personal details, *please do not pry*. That would be invading their privacy.
+>
+> And no, "5ch dug up this information" does *not* count as "publicly revealing".
+> If it doesn't come directly from the VTuber, *it is doxing*. Just know that the vast majority
+> of VTubers do not make their other online identities public, much less personal information.
 
 ### So how do I communicate with the streamer?
 
@@ -51,6 +60,10 @@ and *not* their lunch or that game of Apex they played yesterday.
 On the other hand, if other viewers see people using chat as their personal Twitter or spamming memes,
 they'll decide it's okay for them to do the same. This spoils the fun for both the streamer
 and everyone else in chat.
+
+An on-topic chat also helps people follow what's going on in the stream. If the viewers who
+understand some Japanese comment about what's happening, then the viewers who don't understand
+anything can see their reactions and enjoy the stream more.
 
 It's also *very* rude to randomly start talking about a different streamer.
 Not only is it disrespectful to the streamer you are watching,

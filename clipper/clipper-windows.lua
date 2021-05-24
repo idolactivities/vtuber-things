@@ -256,11 +256,16 @@ function estimate_frames(segment_inputs)
     return frame_count
 end
 
-function run_as_batch(cmd, callback, mode)
+function run_as_batch(cmd, callback, mode, debug)
     local temp_file = aegisub.decode_path('?temp/clipper.bat')
     local fh = io.open(temp_file, 'w')
     fh:write('setlocal\r\n')
     fh:write(cmd .. '\r\n')
+    if debug then
+        fh:write('pause\r\n')
+    else
+        fh:write('if %ERRORLEVEL% GEQ 1 pause\r\n')
+    end
     fh:write('endlocal\r\n')
     fh:close()
 
@@ -531,12 +536,23 @@ function select_clip_options(clipname)
             y = 1,
             width = 1,
             height = 1
-        }, {
+        },
+        {
             class = 'edit',
             name = 'clipname',
             value = clipname,
             x = 2,
             y = 1,
+            width = 2,
+            height = 1
+        },
+        {
+            class = 'checkbox',
+            name = 'debug',
+            label = 'Debug mode',
+            value = false,
+            x = 0,
+            y = 2,
             width = 2,
             height = 1
         }
@@ -568,6 +584,7 @@ function clipper(sub, sel, _)
 
     local clipname = find_unused_clipname(work_dir, split_ext(ass_fname))
     local results = select_clip_options(clipname)
+    local debug = results['debug']
     local output_path = work_dir .. results['clipname'] ..
                             ENCODE_PRESETS[results['preset']]['extension']
     local options = ENCODE_PRESETS[results['preset']]['options']
@@ -616,7 +633,10 @@ function clipper(sub, sel, _)
     local total_frames = estimate_frames(segment_inputs)
 
     aegisub.progress.task('Encoding your video...')
-    res = run_as_batch(cmd)
+    if debug then
+        aegisub.debug.out(cmd .. '\n')
+    end
+    res = run_as_batch(cmd, nil, nil, debug)
 
     if res == nil then
         show_info(('FFmpeg failed to complete! Try the troubleshooting\n' ..
