@@ -42,8 +42,8 @@ and 100 or larger for 1080p video.
 Where you place your subtitles matters more than you may think.
 Take a look at the example below:
 
-<a href="/scripts/assets/img/guides_subtitling_text_background.png" target="_blank">
-  <img src="/scripts/assets/img/guides_subtitling_text_background.png" width="520" alt="Click to enlarge" title="Click to enlarge"/>
+<a href="{{ '/assets/img/guides_subtitling_text_background.png' | relative_url }}" target="_blank">
+  <img src="{{ '/assets/img/guides_subtitling_text_background.png' | relative_url }}" width="520" alt="Click to enlarge" title="Click to enlarge"/>
 </a>
 
 See how much of a difference the background makes?
@@ -59,14 +59,14 @@ of the screen, but not so close that they get in the way. As a rule of thumb,
 your vertical margin should be at least as large as your font size,
 and your horizontal margins about twice as large as that.
 
-<a href="/scripts/assets/img/guides_subtitling_example_01.png" target="_blank">
-  <img src="/scripts/assets/img/guides_subtitling_example_01.png" width="520" alt="Click to enlarge" title="Click to enlarge"/>
+<a href="{{ '/assets/img/guides_subtitling_example_01.png' | relative_url }}" target="_blank">
+  <img src="{{ '/assets/img/guides_subtitling_example_01.png' | relative_url }}" width="520" alt="Click to enlarge" title="Click to enlarge"/>
 </a>
 
 ## Colors
 
-<a href="/scripts/assets/img/guides_subtitling_text_colors.png" target="_blank">
-  <img src="/scripts/assets/img/guides_subtitling_text_colors.png" width="520" alt="Click to enlarge" title="Click to enlarge"/>
+<a href="{{ '/assets/img/guides_subtitling_text_colors.png' | relative_url }}" target="_blank">
+  <img src="{{ '/assets/img/guides_subtitling_text_colors.png' | relative_url }}" width="520" alt="Click to enlarge" title="Click to enlarge"/>
 </a>
 
 The above image summarizes most of what you should know. When in doubt, use white
