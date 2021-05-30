@@ -10,7 +10,7 @@ https://idolactivities.github.io/vtuber-things/guides/clipper.html
 ---------------------
 script_name = 'Clipper'
 script_description = 'Encode a video clip based on the subtitles.'
-script_version = '1.0.1'
+script_version = '1.0.2'
 
 clipboard = require('aegisub.clipboard')
 
