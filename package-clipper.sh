@@ -1,10 +1,10 @@
 #!/bin/bash
 
-FFMPEG_VERSION=4.2.2
+FFMPEG_VERSION=4.4
 RELEASE_DIR=releases
 PKG_DIR=clipper-release
 
-VERSION=$(git describe --match "clipper-*" --long --tags | sed 's/clipper-//;s/\([^-]*-g\)/r\1/;s/-/./g;s/\.g[[:alnum:]]\+//')
+VERSION=$(git describe --match "clipper-*" --long --tags | sed 's/clipper-//;s/\([^-]*-g\)/r\1/;s/-/./g;s/\.g[[:alnum:]]\+//;s/\.r0$//')
 
 echo "Current release: ${VERSION}"
 mkdir -p ${RELEASE_DIR}
@@ -21,9 +21,9 @@ echo "Creating release package for Linux/OS X..."
 echo
 
 echo "Downloading ffmpeg Windows binaries..."
-wget -qO ffmpeg.zip "https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-${FFMPEG_VERSION}-win64-static.zip"
+wget -qO ffmpeg.7z "https://www.gyan.dev/ffmpeg/builds/packages/ffmpeg-${FFMPEG_VERSION}-essentials_build.7z"
 mkdir -p ${PKG_DIR}/bin
-unzip -jx ffmpeg.zip "ffmpeg-${FFMPEG_VERSION}-win64-static/bin/"{ffmpeg.exe,ffprobe.exe} -d release/bin/
+7z e -o"${PKG_DIR}/bin/" ffmpeg.7z "ffmpeg-${FFMPEG_VERSION}-essentials_build/bin/"{ffmpeg.exe,ffprobe.exe}
 echo
 
 echo "Creating release package for Windows..."
@@ -32,4 +32,4 @@ cp clipper/clipper-windows.lua ${PKG_DIR}/autoload/clipper.lua
 echo
 
 echo "Removing build artifacts..."
-rm -rvf ${PKG_DIR} ffmpeg.zip
+rm -rvf ${PKG_DIR} ffmpeg.7z
