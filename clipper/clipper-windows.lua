@@ -290,7 +290,7 @@ end
 function id_colorspace(video)
     local values = {}
 
-    local cmd = ('"%s" -show_streams -select_streams v "%s"'):format(FFPROBE,
+    local cmd = ('"%s" -show_streams -select_streams v:0 "%s"'):format(FFPROBE,
                                                                      video)
 
     local res = run_as_batch(cmd, function(pipe)
